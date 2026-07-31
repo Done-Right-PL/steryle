@@ -1,0 +1,19 @@
+{
+  "extends": "@stryle/config/typescript/react-native",
+  "compilerOptions": {
+    "types": ["react", "nativewind/types"],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@stryle/core": ["../../packages/core/src/index.ts"],
+      "@stryle/core/*": ["../../packages/core/src/*"]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts",
+    "nativewind-env.d.ts"
+  ],
+  "exclude": ["node_modules"]
+}

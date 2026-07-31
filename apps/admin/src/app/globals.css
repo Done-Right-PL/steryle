@@ -1,0 +1,139 @@
+@import "tailwindcss";
+
+/*
+ * The admin portal inherits the storefront's strictly monochrome palette so
+ * the two products feel like one system. Tokens are duplicated rather than
+ * imported because Tailwind v4 resolves @theme at build time per app; they
+ * mirror packages/config/tokens.js, same as apps/web.
+ *
+ * One deliberate departure: admin work is dense and status-driven, so this app
+ * adds table, badge and form primitives the storefront has no use for. Status
+ * is still communicated without hue — via fill, weight and border.
+ */
+@theme {
+  --color-ink: #0a0a0a;
+  --color-ink-700: #262626;
+  --color-ink-500: #525252;
+  --color-ink-400: #737373;
+  --color-ink-300: #a3a3a3;
+
+  --color-paper: #ffffff;
+  --color-paper-50: #fafafa;
+  --color-paper-100: #f5f5f5;
+  --color-paper-200: #e5e5e5;
+  --color-paper-300: #d4d4d4;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-card: 2px;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background: var(--color-paper-50);
+    color: var(--color-ink);
+    font-feature-settings: "cv11", "ss01";
+  }
+
+  ::selection {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 2px;
+  }
+
+  /* Tabular figures keep price and count columns aligned down the table. */
+  table {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer components {
+  .label {
+    @apply text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-400;
+  }
+
+  /*
+   * Grouped rather than composed with @apply: Tailwind v4 only lets @apply
+   * reference real utilities, not other custom component classes.
+   */
+  .btn,
+  .btn-primary,
+  .btn-outline,
+  .btn-quiet,
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap text-[13px]
+      font-medium transition-colors duration-150 disabled:cursor-not-allowed
+      disabled:opacity-40;
+  }
+
+  .btn-primary {
+    @apply h-10 bg-ink px-5 text-paper hover:bg-ink-700;
+  }
+
+  .btn-outline {
+    @apply h-10 border border-ink px-5 text-ink hover:bg-ink hover:text-paper;
+  }
+
+  .btn-quiet {
+    @apply h-9 border border-paper-200 bg-paper px-3 text-ink-500 hover:border-ink hover:text-ink;
+  }
+
+  /*
+   * Destructive actions cannot use red in a monochrome system, so they are
+   * marked by a dashed border that no other control uses.
+   */
+  .btn-danger {
+    @apply h-9 border border-dashed border-ink-400 bg-paper px-3 text-ink-500
+      hover:border-ink hover:bg-ink hover:text-paper;
+  }
+
+  .field {
+    @apply h-10 w-full border border-paper-200 bg-paper px-3 text-sm text-ink
+      placeholder:text-ink-300 focus:border-ink focus:outline-none;
+  }
+
+  .field-area {
+    @apply w-full border border-paper-200 bg-paper px-3 py-2 text-sm text-ink
+      placeholder:text-ink-300 focus:border-ink focus:outline-none;
+  }
+
+  .card {
+    @apply border border-paper-200 bg-paper;
+  }
+
+  /* Column headers: quiet, uppercase, and sticky inside scrolling tables. */
+  .th {
+    @apply border-b border-paper-200 bg-paper-50 px-4 py-2.5 text-left text-[10px]
+      font-semibold uppercase tracking-[0.12em] text-ink-400;
+  }
+
+  .td {
+    @apply border-b border-paper-100 px-4 py-3 text-sm text-ink-700 align-middle;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1.5 border px-2 py-0.5 text-[11px] font-medium;
+  }
+
+  /* Filled = needs attention or is terminal-positive; outline = in progress. */
+  .badge-solid {
+    @apply border-ink bg-ink text-paper;
+  }
+
+  .badge-outline {
+    @apply border-paper-300 bg-paper text-ink-500;
+  }
+
+  .badge-muted {
+    @apply border-paper-200 bg-paper-100 text-ink-400;
+  }
+}

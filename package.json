@@ -1,28 +1,34 @@
 {
   "name": "stryle",
+  "version": "0.1.0",
   "private": true,
-  "version": "1.0.0",
-  "type": "module",
-  "description": "Stryle - a surgical & medical supplies e-commerce store",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "lint": "eslint .",
-    "gen:catalog": "node scripts/scrape-surginatal.mjs",
-    "scrape:catalog": "node scripts/scrape-surginatal.mjs"
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=20.0.0"
   },
-  "dependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-router-dom": "^6.26.2"
+  "scripts": {
+    "dev": "turbo dev",
+    "dev:web": "pnpm --filter @stryle/web dev",
+    "dev:mobile": "pnpm --filter @stryle/mobile dev",
+    "build": "turbo build",
+    "build:web": "pnpm --filter @stryle/web build",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "scrape:catalog": "node scripts/scrape-surginatal.mjs",
+    "gen:catalog": "node scripts/scrape-surginatal.mjs"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.3.1",
-    "autoprefixer": "^10.4.20",
-    "playwright": "^1.60.0",
-    "postcss": "^8.4.47",
-    "tailwindcss": "^3.4.13",
-    "vite": "^5.4.8"
+    "prettier": "^3.4.2",
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.2"
+  },
+  "pnpm": {
+    "overrides": {
+      "@types/react": "19.1.17",
+      "@types/react-dom": "19.1.11"
+    }
   }
 }

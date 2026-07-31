@@ -1,0 +1,37 @@
+{
+  "expo": {
+    "name": "Stryle",
+    "slug": "stryle",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "stryle",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "in.stryle.app"
+    },
+    "android": {
+      "package": "in.stryle.app",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "backgroundColor": "#FFFFFF"
+      }
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FFFFFF",
+          "resizeMode": "contain",
+          "imageWidth": 160
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

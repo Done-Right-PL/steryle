@@ -1,0 +1,150 @@
+@import "tailwindcss";
+
+/*
+ * Stryle's blue marketplace theme. Brand blue carries primary actions and
+ * wayfinding, teal marks secondary emphasis, and the neutral scale is cool
+ * tinted so it sits with the blues. Values mirror packages/config/tokens.js,
+ * which apps/mobile reads for the same palette.
+ */
+@theme {
+  --color-brand-50: #eef7ff;
+  --color-brand-100: #d9edff;
+  --color-brand-200: #bce0ff;
+  --color-brand-300: #8eccff;
+  --color-brand-400: #59aeff;
+  --color-brand-500: #338bff;
+  --color-brand-600: #1f6cf5;
+  --color-brand-700: #1a56e1;
+  --color-brand-800: #1c47b6;
+  --color-brand-900: #1d408f;
+  --color-brand-950: #162857;
+  --color-brand: #1f6cf5;
+
+  --color-accent-50: #effcfb;
+  --color-accent-100: #c9f5f2;
+  --color-accent-500: #0ea5a4;
+  --color-accent-600: #0d9090;
+  --color-accent-700: #0b7676;
+  --color-accent: #0d9090;
+
+  --color-ink: #0f172a;
+  --color-ink-900: #0f172a;
+  --color-ink-800: #1e293b;
+  --color-ink-700: #334155;
+  --color-ink-600: #475569;
+  --color-ink-500: #64748b;
+  --color-ink-400: #94a3b8;
+  --color-ink-300: #cbd5e1;
+
+  --color-paper: #ffffff;
+  --color-paper-50: #f8fafc;
+  --color-paper-100: #f1f5f9;
+  --color-paper-200: #e2e8f0;
+  --color-paper-300: #cbd5e1;
+
+  --color-success-50: #f0fdf4;
+  --color-success-100: #dcfce7;
+  --color-success-600: #16a34a;
+  --color-success-700: #15803d;
+
+  --color-danger-50: #fff1f2;
+  --color-danger-100: #ffe4e6;
+  --color-danger-500: #f43f5e;
+  --color-danger-600: #e11d48;
+  --color-danger-700: #be123c;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-card: 12px;
+
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-hover: 0 10px 30px rgba(31, 108, 245, 0.12);
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink-800);
+    font-feature-settings: "cv11", "ss01";
+  }
+
+  ::selection {
+    background: var(--color-brand-100);
+    color: var(--color-brand-900);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brand-500);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .container-x {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Uppercase micro-label used for brands, section eyebrows and metadata. */
+  .label {
+    @apply text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-400;
+  }
+
+  /*
+   * Grouped rather than composed with @apply: Tailwind v4 only lets @apply
+   * reference real utilities, not other custom component classes.
+   */
+  .btn,
+  .btn-primary,
+  .btn-accent,
+  .btn-outline,
+  .btn-quiet {
+    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg
+      text-sm font-semibold transition-colors duration-150
+      disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply h-11 bg-brand-600 px-5 text-white shadow-sm hover:bg-brand-700;
+  }
+
+  .btn-accent {
+    @apply h-11 bg-accent-600 px-5 text-white shadow-sm hover:bg-accent-500;
+  }
+
+  .btn-outline {
+    @apply h-11 border border-paper-200 bg-white px-5 text-ink-700
+      hover:border-brand-400 hover:text-brand-700;
+  }
+
+  .btn-quiet {
+    @apply h-10 px-4 text-ink-600 hover:bg-paper-100 hover:text-ink-900;
+  }
+
+  .card {
+    @apply rounded-xl border border-paper-200 bg-white shadow-card;
+  }
+
+  .field {
+    @apply h-11 w-full rounded-lg border border-paper-200 bg-white px-3.5 text-sm
+      text-ink-800 outline-none transition placeholder:text-ink-400
+      focus:border-brand-400 focus:ring-2 focus:ring-brand-100;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold;
+  }
+
+  /*
+   * Product photography sits on a neutral plate so the image itself stays the
+   * most saturated element in the composition.
+   */
+  .photo-plate {
+    @apply relative overflow-hidden rounded-xl bg-paper-50;
+  }
+}

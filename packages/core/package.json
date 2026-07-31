@@ -1,0 +1,22 @@
+{
+  "name": "@stryle/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./data/*": "./src/data/*",
+    "./*": "./src/*"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "echo 'core: skip'",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@stryle/config": "workspace:*",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}

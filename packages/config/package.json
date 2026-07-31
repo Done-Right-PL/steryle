@@ -1,0 +1,22 @@
+{
+  "name": "@stryle/config",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "echo 'config: no build'",
+    "lint": "echo 'config: skip'",
+    "typecheck": "echo 'config: skip'"
+  },
+  "dependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.20.0",
+    "@typescript-eslint/parser": "^8.20.0"
+  },
+  "exports": {
+    "./typescript/base": "./typescript/base.json",
+    "./typescript/nextjs": "./typescript/nextjs.json",
+    "./typescript/react-native": "./typescript/react-native.json",
+    "./eslint/base": "./eslint/base.js",
+    "./prettier": "./prettier.config.js",
+    "./tokens": "./tokens.js"
+  }
+}

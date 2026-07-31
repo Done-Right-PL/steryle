@@ -1,0 +1,21 @@
+{
+  "extends": "@stryle/config/typescript/nextjs",
+  "compilerOptions": {
+    "jsx": "preserve",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@stryle/core": ["../../packages/core/src/index.ts"],
+      "@stryle/core/*": ["../../packages/core/src/*"],
+      "@stryle/db": ["../../packages/db/src/index.ts"],
+      "@stryle/db/*": ["../../packages/db/src/*"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": ["node_modules"]
+}

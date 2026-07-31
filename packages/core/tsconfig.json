@@ -1,0 +1,11 @@
+{
+  "extends": "@stryle/config/typescript/base",
+  "compilerOptions": {
+    "paths": {
+      "@stryle/core": ["./src/index.ts"],
+      "@stryle/core/*": ["./src/*"]
+    }
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/__tests__/**"]
+}

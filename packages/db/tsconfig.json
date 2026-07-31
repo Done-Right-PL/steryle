@@ -1,0 +1,12 @@
+{
+  "extends": "@stryle/config/typescript/base",
+  "compilerOptions": {
+    "types": ["node"],
+    "paths": {
+      "@stryle/core": ["../core/src/index.ts"],
+      "@stryle/core/*": ["../core/src/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "drizzle.config.ts"],
+  "exclude": ["node_modules", "drizzle"]
+}

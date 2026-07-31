@@ -1,0 +1,186 @@
+[
+  {
+    "name": "Surgical Sutures & Closures",
+    "slug": "surgical-sutures",
+    "code": "SS",
+    "icon": "suture",
+    "blurb": "Genuine surgical sutures & closures from trusted medical brands — sourced for hospitals, clinics and home care.",
+    "productCount": 60
+  },
+  {
+    "name": "Orthopaedic Supplies",
+    "slug": "ortho-care",
+    "code": "OS",
+    "icon": "brace",
+    "blurb": "Genuine orthopaedic supplies from trusted medical brands — sourced for hospitals, clinics and home care.",
+    "productCount": 57
+  },
+  {
+    "name": "Diagnostic Monitoring Devices",
+    "slug": "diagnostic-monitoring-devices",
+    "code": "DM",
+    "icon": "stethoscope",
+    "blurb": "Genuine diagnostic monitoring devices from trusted medical brands — sourced for hospitals, clinics and home care.",
+    "productCount": 56
+  },
+  {
+    "name": "Wound Care",
+    "slug": "wound-care",
+    "code": "WC",
+    "icon": "dressing",
+    "blurb": "Genuine wound care from trusted medical brands — sourced for hospitals, clinics and home care.",
+    "productCount": 50
+  },
+  {
+    "name": "Infusion therapy & Vascular Access",
+    "slug": "syringe",
+    "code": "IT",
+    "icon": "iv",
+    "blurb": "Genuine infusion therapy & vascular access from trusted medical brands — sourced for hospitals, clinics and home care.",
+    "productCount": 59
+  },
+  {
+    "name": "Ostomy Care",
+    "slug": "ostomy-care",
+    "code": "OC",
+    "icon": "dressing",
+    "blurb": "Genuine ostomy care from trusted medical brands — sourced for hospitals, clinics and home care.",
+    "productCount": 58
+  },
+  {
+    "name": "Bandages & Tapes",
+    "slug": "bandages-tapes",
+    "code": "BT",
+    "icon": "dressing",
+    "blurb": "Genuine bandages & tapes from trusted medical brands — sourced for hospitals, clinics and home care.",
+    "productCount": 42
+  },
+  {
+    "name": "Respiratory Care & Ventilation",
+    "slug": "respiratory-care",
+    "code": "RC",
+    "icon": "mask",
+    "blurb": "Genuine respiratory care & ventilation from trusted medical brands — sourced for hospitals, clinics and home care.",
+    "productCount": 34
+  },
+  {
+    "name": "Catheters & Drainage",
+    "slug": "catheters-drainage",
+    "code": "CD",
+    "icon": "iv",
+    "blurb": "Genuine catheters & drainage from trusted medical brands — sourced for hospitals, clinics and home care.",
+    "productCount": 57
+  },
+  {
+    "name": "Surgical Supplies",
+    "slug": "surgical-supplies",
+    "code": "SS",
+    "icon": "scalpel",
+    "blurb": "Genuine surgical supplies from trusted medical brands — sourced for hospitals, clinics and home care.",
+    "productCount": 33
+  },
+  {
+    "name": "Protective Equipments & PPE",
+    "slug": "protective-equipments-ppe",
+    "code": "PE",
+    "icon": "mask",
+    "blurb": "Genuine protective equipments & ppe from trusted medical brands — sourced for hospitals, clinics and home care.",
+    "productCount": 46
+  },
+  {
+    "name": "Maternity & Neonatal Care",
+    "slug": "maternity-neonatal-care",
+    "code": "MN",
+    "icon": "dressing",
+    "blurb": "Genuine maternity & neonatal care from trusted medical brands — sourced for hospitals, clinics and home care.",
+    "productCount": 48
+  },
+  {
+    "name": "Airway Management",
+    "slug": "airway-management",
+    "code": "AM",
+    "icon": "mask",
+    "blurb": "Genuine airway management from trusted medical brands — sourced for hospitals, clinics and home care.",
+    "productCount": 55
+  },
+  {
+    "name": "Hospital Equipment & Supplies",
+    "slug": "hospital-furniture-accessories",
+    "code": "HE",
+    "icon": "bed",
+    "blurb": "Genuine hospital equipment & supplies from trusted medical brands — sourced for hospitals, clinics and home care.",
+    "productCount": 5
+  },
+  {
+    "name": "Laboratory & Diagnostics",
+    "slug": "laboratory-product",
+    "code": "LD",
+    "icon": "flask",
+    "blurb": "Genuine laboratory & diagnostics from trusted medical brands — sourced for hospitals, clinics and home care.",
+    "productCount": 33
+  },
+  {
+    "name": "Disinfection & Antiseptics",
+    "slug": "disinfection-antiseptics",
+    "code": "DA",
+    "icon": "spray",
+    "blurb": "Genuine disinfection & antiseptics from trusted medical brands — sourced for hospitals, clinics and home care.",
+    "productCount": 34
+  },
+  {
+    "name": "Incontinence & Continence Care",
+    "slug": "incontinence-continence-care",
+    "code": "IC",
+    "icon": "dressing",
+    "blurb": "Genuine incontinence & continence care from trusted medical brands — sourced for hospitals, clinics and home care.",
+    "productCount": 36
+  },
+  {
+    "name": "Home Patient care",
+    "slug": "home-patient-care",
+    "code": "HP",
+    "icon": "bed",
+    "blurb": "Genuine home patient care from trusted medical brands — sourced for hospitals, clinics and home care.",
+    "productCount": 26
+  },
+  {
+    "name": "Urology & Gynecology",
+    "slug": "urology",
+    "code": "UG",
+    "icon": "iv",
+    "blurb": "Genuine urology & gynecology from trusted medical brands — sourced for hospitals, clinics and home care.",
+    "productCount": 12
+  },
+  {
+    "name": "Feeding & Nutrition",
+    "slug": "feeding-nutrition",
+    "code": "FN",
+    "icon": "iv",
+    "blurb": "Genuine feeding & nutrition from trusted medical brands — sourced for hospitals, clinics and home care.",
+    "productCount": 13
+  },
+  {
+    "name": "Dialysis & Renal Care",
+    "slug": "dialysis-renal-care",
+    "code": "DR",
+    "icon": "iv",
+    "blurb": "Genuine dialysis & renal care from trusted medical brands — sourced for hospitals, clinics and home care.",
+    "productCount": 13
+  },
+  {
+    "name": "Ophthalmology",
+    "slug": "ophthalmology",
+    "code": "O",
+    "icon": "dressing",
+    "blurb": "Genuine ophthalmology from trusted medical brands — sourced for hospitals, clinics and home care.",
+    "productCount": 4
+  },
+  {
+    "name": "Dental Care",
+    "slug": "dental-care",
+    "code": "DC",
+    "icon": "scalpel",
+    "blurb": "Genuine dental care from trusted medical brands — sourced for hospitals, clinics and home care.",
+    "productCount": 2
+  }
+]
