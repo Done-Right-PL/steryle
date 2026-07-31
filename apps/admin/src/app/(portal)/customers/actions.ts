@@ -1,23 +1,17 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { eq } from 'drizzle-orm'
 import { z } from 'zod'
-import { auditLog, customers, db } from '@stryle/db'
+import { getCustomerById, updateCustomerFields, writeAudit } from '@steryle/db'
 import { requireWriter } from '@/lib/auth'
 
 const setStatusSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().min(1),
   status: z.enum(['active', 'blocked']),
 })
 
-/**
- * Blocking is reversible and keeps all order history intact — customers are
- * never deleted, because their orders reference them.
- */
 export async function setCustomerStatus(formData: FormData) {
   const user = await requireWriter()
-
   const parsed = setStatusSchema.safeParse({
     id: formData.get('id'),
     status: formData.get('status'),
@@ -25,16 +19,10 @@ export async function setCustomerStatus(formData: FormData) {
   if (!parsed.success) throw new Error('Invalid request.')
 
   const { id, status } = parsed.data
-
-  const [updated] = await db
-    .update(customers)
-    .set({ status, updatedAt: new Date() })
-    .where(eq(customers.id, id))
-    .returning({ id: customers.id, name: customers.name })
-
+  const updated = await updateCustomerFields(id, { status })
   if (!updated) throw new Error('Customer not found.')
 
-  await db.insert(auditLog).values({
+  await writeAudit({
     actorId: user.id,
     actorEmail: user.email,
     action: status === 'blocked' ? 'customer.blocked' : 'customer.unblocked',
@@ -48,13 +36,12 @@ export async function setCustomerStatus(formData: FormData) {
 }
 
 const marketingSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().min(1),
   optIn: z.enum(['true', 'false']),
 })
 
 export async function setMarketingOptIn(formData: FormData) {
   const user = await requireWriter()
-
   const parsed = marketingSchema.safeParse({
     id: formData.get('id'),
     optIn: formData.get('optIn'),
@@ -62,13 +49,11 @@ export async function setMarketingOptIn(formData: FormData) {
   if (!parsed.success) throw new Error('Invalid request.')
 
   const marketingOptIn = parsed.data.optIn === 'true'
+  const existing = await getCustomerById(parsed.data.id)
+  if (!existing) throw new Error('Customer not found.')
 
-  await db
-    .update(customers)
-    .set({ marketingOptIn, updatedAt: new Date() })
-    .where(eq(customers.id, parsed.data.id))
-
-  await db.insert(auditLog).values({
+  await updateCustomerFields(parsed.data.id, { marketingOptIn })
+  await writeAudit({
     actorId: user.id,
     actorEmail: user.email,
     action: 'customer.marketing_changed',

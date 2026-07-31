@@ -10,9 +10,9 @@ import {
   type CartState,
   type CartTotals,
   type Product,
-} from '@stryle/core'
+} from '@steryle/core'
 
-const STORAGE_KEY = 'stryle.cart.v2'
+const STORAGE_KEY = 'steryle.cart.v2'
 
 interface CartStore {
   items: CartState

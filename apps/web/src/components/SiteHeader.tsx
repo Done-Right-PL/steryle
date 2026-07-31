@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { categories } from '@stryle/core'
+import { categories } from '@steryle/core'
 import { useCart } from '@/lib/cart-store'
 import { Icon, CategoryIcon } from './Icons'
 

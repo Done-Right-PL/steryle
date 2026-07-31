@@ -34,3 +34,7 @@ ios/
 *.log
 .vscode/*
 !.vscode/settings.json
+
+# SST
+.sst
+sst-env.d.ts

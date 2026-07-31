@@ -1,3 +1,3 @@
-import base from '@stryle/config/eslint/base'
+import base from '@steryle/config/eslint/base'
 
 export default [...base, { ignores: ['.expo/**', 'expo-env.d.ts'] }]

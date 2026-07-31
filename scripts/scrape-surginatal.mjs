@@ -1,5 +1,5 @@
 /**
- * Real catalog scraper for Stryle.
+ * Real catalog scraper for Steryle.
  *
  * Pulls live categories and products (with REAL brands, names, prices, images
  * and ratings) from the upstream storefront API and writes them into the
@@ -11,7 +11,7 @@
  * brand, category, categorySlug, slug, variant, unit, price, mrp, discountPct,
  * rating, reviews, inStock, hsn, description, highlights, images).
  *
- * Stryle does not resell the upstream site's own house brand, and does not
+ * Steryle does not resell the upstream site's own house brand, and does not
  * sell pharmaceuticals — both are dropped here rather than filtered downstream,
  * so re-running this script reproduces the committed catalogue instead of
  * reintroducing products the storefront is not allowed to list.
@@ -28,7 +28,7 @@ const imageDir = resolve(__dirname, '../apps/web/public/products')
 
 /** House brand of the upstream site — its products are not resold here. */
 const EXCLUDED_BRAND = 'surginatal'
-/** Stryle sells devices and equipment only, never medicines or ingestibles. */
+/** Steryle sells devices and equipment only, never medicines or ingestibles. */
 const EXCLUDED_CATEGORY_SLUGS = new Set(['pharmaceuticals-medications'])
 /**
  * Beds, mattresses and mobility seating are too bulky to fulfil, wherever the
@@ -290,7 +290,7 @@ function normalize(raw, cat, sku) {
     inStock,
     hsn: hsnFor(cat.slug),
     description:
-      `${name} — genuine ${brand} product supplied through Stryle. ` +
+      `${name} — genuine ${brand} product supplied through Steryle. ` +
       `Variant: ${variant}. Supplied as "${unit}". 100% authentic, sourced directly ` +
       `and suitable for hospitals, clinics and home care.`,
     highlights: [

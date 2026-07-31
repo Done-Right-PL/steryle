@@ -10,8 +10,8 @@
     "resolveJsonModule": true,
     "noEmit": true,
     "paths": {
-      "@stryle/core": ["./packages/core/src/index.ts"],
-      "@stryle/core/*": ["./packages/core/src/*"]
+      "@steryle/core": ["./packages/core/src/index.ts"],
+      "@steryle/core/*": ["./packages/core/src/*"]
     }
   },
   "include": ["packages/core/src/**/*.ts"],

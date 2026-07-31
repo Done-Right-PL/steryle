@@ -1,4 +1,4 @@
-const { brand, accent, ink, paper, success, danger } = require('@stryle/config/tokens')
+const { brand, accent, ink, paper, success, danger } = require('@steryle/config/tokens')
 
 /**
  * Mirrors apps/web's @theme tokens so the app and the storefront render the

@@ -6,7 +6,7 @@ import {
   getProductBySlug,
   getRelatedProducts,
   products as allProducts,
-} from '@stryle/core'
+} from '@steryle/core'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { BuyPanel } from '@/components/BuyPanel'
 import { Icon } from '@/components/Icons'

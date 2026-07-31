@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { sortProducts, type Product, type SortKey } from '@stryle/core'
+import { sortProducts, type Product, type SortKey } from '@steryle/core'
 import { ProductGrid } from './ProductCard'
 
 const SORTS: { key: SortKey; label: string }[] = [

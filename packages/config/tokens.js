@@ -1,5 +1,5 @@
 /**
- * Stryle design tokens — the blue marketplace system shared by web and mobile.
+ * Steryle design tokens — the blue marketplace system shared by web and mobile.
  *
  * Brand blue carries primary actions and wayfinding, teal marks secondary
  * emphasis, and the neutral scale is cool-tinted so it sits with the blues

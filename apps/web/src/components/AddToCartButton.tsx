@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import type { Product } from '@stryle/core'
+import type { Product } from '@steryle/core'
 import { useCart } from '@/lib/cart-store'
 import { Icon } from './Icons'
 

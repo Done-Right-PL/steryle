@@ -1,7 +1,13 @@
 import 'server-only'
 
-import { and, asc, count, desc, eq, ilike, or, sql, type SQL } from 'drizzle-orm'
-import { customers, db, orders } from '@stryle/db'
+import {
+  getCustomerById,
+  getCustomerStats as dbCustomerStats,
+  getOrdersForCustomer,
+  listAllCustomers,
+  listAllOrders,
+  type CustomerRow,
+} from '@steryle/db'
 
 export const CUSTOMER_PAGE_SIZE = 25
 
@@ -14,81 +20,57 @@ export type CustomerFilters = {
   page?: number
 }
 
-/**
- * Lifetime spend and order count are aggregated in the same query as the list
- * itself. Doing it per row in the page would fire one query per customer.
- */
+const VOID = new Set(['cancelled', 'refunded'])
+
 export async function listCustomers(filters: CustomerFilters) {
   const page = Math.max(1, filters.page ?? 1)
-  const conditions: (SQL | undefined)[] = []
+  const [customers, orders] = await Promise.all([listAllCustomers(), listAllOrders()])
+
+  const spendByCustomer = new Map<string, { spend: number; orders: number }>()
+  for (const o of orders) {
+    const row = spendByCustomer.get(o.customerId) ?? { spend: 0, orders: 0 }
+    row.orders += 1
+    if (!VOID.has(o.status)) row.spend += o.total
+    spendByCustomer.set(o.customerId, row)
+  }
+
+  let rows = customers.map((c) => {
+    const stats = spendByCustomer.get(c.id) ?? { spend: 0, orders: 0 }
+    return { ...c, spend: stats.spend, orders: stats.orders }
+  })
 
   if (filters.query) {
-    const term = `%${filters.query.trim()}%`
-    conditions.push(
-      or(
-        ilike(customers.name, term),
-        ilike(customers.phone, term),
-        ilike(customers.email, term),
-        ilike(customers.city, term),
-      ),
+    const term = filters.query.trim().toLowerCase()
+    rows = rows.filter((c) =>
+      `${c.name} ${c.phone} ${c.email ?? ''} ${c.city ?? ''}`.toLowerCase().includes(term),
     )
   }
-  if (filters.status) conditions.push(eq(customers.status, filters.status))
+  if (filters.status) rows = rows.filter((c) => c.status === filters.status)
 
-  const where = conditions.length > 0 ? and(...conditions) : undefined
+  rows.sort((a, b) => {
+    switch (filters.sort) {
+      case 'spend':
+        return b.spend - a.spend
+      case 'orders':
+        return b.orders - a.orders
+      case 'name':
+        return a.name.localeCompare(b.name)
+      case 'recent':
+      default:
+        return b.createdAt.getTime() - a.createdAt.getTime()
+    }
+  })
 
-  // Revenue excludes voided orders; order count includes them, so a customer
-  // with only cancellations still reads as having ordered.
-  const spend = sql<number>`coalesce(sum(${orders.total}) filter (where ${orders.status} not in ('cancelled','refunded')), 0)`.mapWith(
-    Number,
-  )
-  const orderCount = sql<number>`count(${orders.id})`.mapWith(Number)
-
-  const orderBy = {
-    recent: desc(customers.createdAt),
-    spend: desc(spend),
-    orders: desc(orderCount),
-    name: asc(customers.name),
-  }[filters.sort ?? 'recent']
-
-  const [rows, [totals]] = await Promise.all([
-    db
-      .select({
-        id: customers.id,
-        name: customers.name,
-        email: customers.email,
-        phone: customers.phone,
-        city: customers.city,
-        state: customers.state,
-        gstin: customers.gstin,
-        status: customers.status,
-        createdAt: customers.createdAt,
-        lastSeenAt: customers.lastSeenAt,
-        spend,
-        orders: orderCount,
-      })
-      .from(customers)
-      .leftJoin(orders, eq(orders.customerId, customers.id))
-      .where(where)
-      .groupBy(customers.id)
-      .orderBy(orderBy)
-      .limit(CUSTOMER_PAGE_SIZE)
-      .offset((page - 1) * CUSTOMER_PAGE_SIZE),
-    db.select({ n: count() }).from(customers).where(where),
-  ])
-
-  return { rows, total: totals?.n ?? 0, page }
+  const start = (page - 1) * CUSTOMER_PAGE_SIZE
+  return { rows: rows.slice(start, start + CUSTOMER_PAGE_SIZE), total: rows.length, page }
 }
 
-export async function getCustomer(id: string) {
-  return db.query.customers.findFirst({ where: eq(customers.id, id) })
+export async function getCustomer(id: string): Promise<CustomerRow | null> {
+  return getCustomerById(id)
 }
 
 export async function getCustomerOrders(customerId: string, limit = 50) {
-  return db.query.orders.findMany({
-    where: eq(orders.customerId, customerId),
-    orderBy: desc(orders.placedAt),
-    limit,
-    with: { items: true },
-  })
+  return getOrdersForCustomer(customerId, limit)
 }
+
+export { dbCustomerStats as getCustomerStats }

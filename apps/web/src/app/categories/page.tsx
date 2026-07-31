@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { categories, products } from '@stryle/core'
+import { categories, products } from '@steryle/core'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { CategoryIcon } from '@/components/Icons'
 

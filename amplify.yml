@@ -11,7 +11,7 @@ applications:
             - pnpm install --frozen-lockfile
         build:
           commands:
-            - pnpm --filter @stryle/web build
+            - pnpm --filter @steryle/web build
       artifacts:
         baseDirectory: apps/web/.next
         files:
@@ -21,4 +21,27 @@ applications:
           - node_modules/**/*
           - apps/web/node_modules/**/*
           - apps/web/.next/cache/**/*
+          - .pnpm-store/**/*
+
+  - appRoot: apps/admin
+    frontend:
+      buildPath: /
+      phases:
+        preBuild:
+          commands:
+            - corepack enable
+            - corepack prepare pnpm@9.15.0 --activate
+            - pnpm install --frozen-lockfile
+        build:
+          commands:
+            - pnpm --filter @steryle/admin build
+      artifacts:
+        baseDirectory: apps/admin/.next
+        files:
+          - "**/*"
+      cache:
+        paths:
+          - node_modules/**/*
+          - apps/admin/node_modules/**/*
+          - apps/admin/.next/cache/**/*
           - .pnpm-store/**/*

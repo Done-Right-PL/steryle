@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { formatINR, type Product } from '@stryle/core'
+import { formatINR, type Product } from '@steryle/core'
 import { AddToCartButton } from './AddToCartButton'
 import { ProductImage } from './ProductImage'
 import { Rating } from './Rating'

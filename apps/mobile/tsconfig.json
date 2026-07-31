@@ -1,11 +1,11 @@
 {
-  "extends": "@stryle/config/typescript/react-native",
+  "extends": "@steryle/config/typescript/react-native",
   "compilerOptions": {
     "types": ["react", "nativewind/types"],
     "paths": {
       "@/*": ["./src/*"],
-      "@stryle/core": ["../../packages/core/src/index.ts"],
-      "@stryle/core/*": ["../../packages/core/src/*"]
+      "@steryle/core": ["../../packages/core/src/index.ts"],
+      "@steryle/core/*": ["../../packages/core/src/*"]
     }
   },
   "include": [

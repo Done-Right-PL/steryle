@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { bestSellers, categories, featuredProducts, products, topBrands } from '@stryle/core'
+import { bestSellers, categories, featuredProducts, products, topBrands } from '@steryle/core'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { ProductGrid } from '@/components/ProductCard'
 import { CategoryIcon, Icon } from '@/components/Icons'

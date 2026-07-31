@@ -6,7 +6,7 @@
  * in-flight, muted for inert. A dot glyph carries the same information for
  * anyone who cannot distinguish the fills.
  */
-import type { NotificationStatus, OrderStatus } from '@stryle/db'
+import type { NotificationStatus, OrderStatus } from '@steryle/db'
 
 type Tone = 'solid' | 'outline' | 'muted'
 

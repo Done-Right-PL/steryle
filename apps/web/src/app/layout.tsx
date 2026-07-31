@@ -11,10 +11,10 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://stryle.in'),
+  metadataBase: new URL('https://steryle.in'),
   title: {
-    default: 'Stryle — Surgical & medical supplies, sourced direct',
-    template: '%s · Stryle',
+    default: 'Steryle — Surgical & medical supplies, sourced direct',
+    template: '%s · Steryle',
   },
   description:
     'Over a thousand genuine surgical and medical supplies from 140+ trusted brands. Wholesale pricing, GST invoices, and delivery across India.',

@@ -1,5 +1,5 @@
 {
-  "name": "@stryle/admin",
+  "name": "@steryle/admin",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -10,8 +10,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@stryle/core": "workspace:*",
-    "@stryle/db": "workspace:*",
+    "@steryle/core": "workspace:*",
+    "@steryle/db": "workspace:*",
     "next": "16.2.10",
     "react": "19.2.4",
     "react-dom": "19.2.4",
@@ -19,7 +19,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@stryle/config": "workspace:*",
+    "@steryle/config": "workspace:*",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

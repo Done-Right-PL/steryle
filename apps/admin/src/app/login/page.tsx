@@ -14,7 +14,7 @@ export default async function LoginPage({
     <main className="flex min-h-screen items-center justify-center bg-paper-50 px-5">
       <div className="w-full max-w-sm">
         <div className="mb-8">
-          <p className="text-2xl font-semibold tracking-tight text-ink">Stryle</p>
+          <p className="text-2xl font-semibold tracking-tight text-ink">Steryle</p>
           <p className="label mt-1">Operations console</p>
         </div>
 

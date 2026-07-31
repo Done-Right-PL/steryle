@@ -1,4 +1,4 @@
-# Stryle
+# Steryle
 
 A surgical & medical supplies marketplace — **Next.js web app + Expo mobile
 app** in a pnpm + Turborepo monorepo, sharing one catalogue package.
@@ -7,11 +7,11 @@ The catalogue holds **real medical device and equipment data**: 833 SKUs,
 genuine brands (Romsons, Polymed, 3M, B. Braun, BD, Dispovan, Nipro, Tynor,
 Flamingo and ~140 more), real prices and real product photography.
 
-Stryle stocks courier-shippable devices, instruments and consumable supplies
+Steryle stocks courier-shippable devices, instruments and consumable supplies
 only. Deliberately **not** listed: pharmaceuticals, medicines and other
 ingestibles; and bulky goods such as hospital beds, mattresses, wheelchairs,
 commodes and hospital linens. Both exclusions are enforced in
-`scripts/scrape-surginatal.mjs` and asserted by the `@stryle/core` test suite,
+`scripts/scrape-surginatal.mjs` and asserted by the `@steryle/core` test suite,
 so a re-scrape cannot reintroduce them.
 
 > Independent demo storefront for educational use. No payments are processed
@@ -33,19 +33,21 @@ both apps follow.
 
 ```
 apps/
-  web/        @stryle/web     Next.js 16 App Router + Tailwind v4  (port 4173)
-  mobile/     @stryle/mobile  Expo 54 + expo-router + NativeWind v4
+  web/        @steryle/web     Next.js 16 App Router + Tailwind v4  (port 4173)
+  admin/      @steryle/admin   Ops portal (port 4174)
+  api/        @steryle/api     Hono → Lambda (SST); /api/* proxied from web/admin
+  mobile/     @steryle/mobile  Expo 54 + expo-router + NativeWind v4
 packages/
-  core/       @stryle/core    Catalogue data, domain types, cart logic (shared)
-  config/     @stryle/config  Shared tsconfig / eslint / prettier / design tokens
+  core/       @steryle/core    Catalogue data, domain types, cart logic (shared)
+  db/         @steryle/db      DynamoDB single-table client + repos
+  config/     @steryle/config  Shared tsconfig / eslint / prettier / design tokens
 scripts/
   scrape-surginatal.mjs       Re-scrapes the live catalogue
+  deploy-backend.sh           SST deploy (profile steryle-admin)
 ```
 
-Both apps consume `@stryle/core` via the `workspace:*` protocol. `core` exports
-raw TypeScript source (no build step); `apps/web` lists it in
-`transpilePackages` and `apps/mobile` reaches it through Metro's workspace
-watcher.
+Backend is SST v3 (DynamoDB + API Gateway + Lambda), same shape as SuperPhysio.
+AWS profile: `steryle-admin`, region `ap-south-1`.
 
 ## Getting started
 
@@ -53,8 +55,13 @@ watcher.
 corepack enable && corepack prepare pnpm@9.15.0 --activate
 pnpm install
 
-pnpm dev:web       # Next.js on http://localhost:4173
-pnpm dev:mobile    # Expo dev server (press i / a to open a simulator)
+pnpm deploy:backend   # once — creates DynamoDB + API
+pnpm seed             # catalogue + demo customers into DynamoDB
+
+pnpm dev:web          # http://localhost:4173
+pnpm dev:admin        # http://localhost:4174 (needs TABLE_NAME + AWS_PROFILE)
+pnpm dev:api          # http://localhost:8787
+pnpm dev:mobile       # Expo
 ```
 
 Turbo fans out across the workspace:
@@ -111,8 +118,8 @@ Query wired up for when the catalogue moves behind an API. Screens: shop, browse
 search, cart, category, product detail and checkout.
 
 ```bash
-pnpm --filter @stryle/mobile ios       # or: android
-pnpm --filter @stryle/mobile build     # Metro bundle for both platforms
+pnpm --filter @steryle/mobile ios       # or: android
+pnpm --filter @steryle/mobile build     # Metro bundle for both platforms
 ```
 
 ## Deployment

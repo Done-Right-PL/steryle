@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import type { Product } from '@stryle/core'
+import type { Product } from '@steryle/core'
 import { CategoryIcon } from './Icons'
 import { iconForCategory } from '@/lib/category-icons'
 

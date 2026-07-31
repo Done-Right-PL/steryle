@@ -1,18 +1,18 @@
 {
   "expo": {
-    "name": "Stryle",
-    "slug": "stryle",
+    "name": "Steryle",
+    "slug": "steryle",
     "version": "0.1.0",
     "orientation": "portrait",
-    "scheme": "stryle",
+    "scheme": "steryle",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "in.stryle.app"
+      "bundleIdentifier": "in.steryle.app"
     },
     "android": {
-      "package": "in.stryle.app",
+      "package": "in.steryle.app",
       "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#FFFFFF"

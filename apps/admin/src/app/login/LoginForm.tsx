@@ -32,7 +32,7 @@ export function LoginForm({ next }: { next?: string }) {
           required
           autoFocus
           className="field"
-          placeholder="you@stryle.in"
+          placeholder="you@steryle.in"
         />
       </div>
 

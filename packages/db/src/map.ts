@@ -1,15 +1,10 @@
 /**
- * Adapters between database rows and the `@stryle/core` domain types the
- * storefront already renders. Keeping the translation here means the web and
- * mobile apps can move off static JSON without touching their components.
+ * Adapters between DynamoDB rows and the `@steryle/core` domain types the
+ * storefront already renders.
  */
-import type { Category, CategoryIconName, Product } from '@stryle/core/types'
-import type { CategoryRow, ProductRow } from './schema'
+import type { Category, CategoryIconName, Product } from '@steryle/core/types'
+import type { CategoryRow, ProductRow } from './types'
 
-/**
- * `discountPct` is derived rather than stored so it can never contradict the
- * price and MRP an admin just edited.
- */
 export function discountPct(price: number, mrp: number): number {
   if (mrp <= 0 || price >= mrp) return 0
   return Math.round(((mrp - price) / mrp) * 100)

@@ -1,17 +1,21 @@
 import type { NextConfig } from 'next'
 
+const apiUrl = (
+  process.env.API_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  'http://localhost:8787'
+).replace(/\/$/, '')
+
 const nextConfig: NextConfig = {
-  transpilePackages: ['@stryle/core', '@stryle/db'],
+  transpilePackages: ['@steryle/core', '@steryle/db'],
+  serverExternalPackages: ['sst', '@aws-sdk/client-dynamodb', '@aws-sdk/lib-dynamodb'],
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'd29azk3rh443yy.cloudfront.net' },
       { protocol: 'https', hostname: 'loremflickr.com' },
-      // Catalogue photography committed to the storefront's public folder is
-      // served from the main site, not from the admin origin.
-      { protocol: 'https', hostname: 'stryle.in' },
+      { protocol: 'https', hostname: 'steryle.in' },
     ],
   },
-  // The admin portal is never public; keep it out of search indexes entirely.
   async headers() {
     return [
       {
@@ -21,6 +25,14 @@ const nextConfig: NextConfig = {
           { key: 'X-Frame-Options', value: 'DENY' },
           { key: 'Referrer-Policy', value: 'same-origin' },
         ],
+      },
+    ]
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${apiUrl}/api/:path*`,
       },
     ]
   },

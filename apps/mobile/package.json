@@ -1,5 +1,5 @@
 {
-  "name": "@stryle/mobile",
+  "name": "@steryle/mobile",
   "version": "0.1.0",
   "private": true,
   "main": "expo-router/entry",
@@ -16,7 +16,7 @@
     "@expo-google-fonts/inter": "^0.4.1",
     "@expo/vector-icons": "^15.1.1",
     "@react-native-async-storage/async-storage": "2.2.0",
-    "@stryle/core": "workspace:*",
+    "@steryle/core": "workspace:*",
     "@tanstack/react-query": "^5.62.8",
     "expo": "~54.0.0",
     "expo-constants": "~18.0.13",
@@ -38,7 +38,7 @@
     "zustand": "^5.0.2"
   },
   "devDependencies": {
-    "@stryle/config": "workspace:*",
+    "@steryle/config": "workspace:*",
     "@types/react": "~19.1.17",
     "eslint": "^9",
     "tailwindcss": "^3.4.17",

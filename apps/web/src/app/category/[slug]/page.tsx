@@ -5,7 +5,7 @@ import {
   getBrandsForCategory,
   getCategoryBySlug,
   getProductsByCategory,
-} from '@stryle/core'
+} from '@steryle/core'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { CategoryBrowser } from '@/components/CategoryBrowser'
 

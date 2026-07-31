@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next'
-import { categories, products } from '@stryle/core'
+import { categories, products } from '@steryle/core'
 
-const BASE = 'https://stryle.in'
+const BASE = 'https://steryle.in'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [

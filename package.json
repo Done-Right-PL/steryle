@@ -1,5 +1,5 @@
 {
-  "name": "stryle",
+  "name": "steryle",
   "version": "0.1.0",
   "private": true,
   "packageManager": "pnpm@9.15.0",
@@ -8,20 +8,29 @@
   },
   "scripts": {
     "dev": "turbo dev",
-    "dev:web": "pnpm --filter @stryle/web dev",
-    "dev:mobile": "pnpm --filter @stryle/mobile dev",
+    "dev:web": "pnpm --filter @steryle/web dev",
+    "dev:admin": "pnpm --filter @steryle/admin dev",
+    "dev:api": "pnpm --filter @steryle/api dev",
+    "dev:mobile": "pnpm --filter @steryle/mobile dev",
     "build": "turbo build",
-    "build:web": "pnpm --filter @stryle/web build",
+    "build:web": "pnpm --filter @steryle/web build",
+    "build:admin": "pnpm --filter @steryle/admin build",
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
     "test": "turbo test",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "scrape:catalog": "node scripts/scrape-surginatal.mjs",
-    "gen:catalog": "node scripts/scrape-surginatal.mjs"
+    "gen:catalog": "node scripts/scrape-surginatal.mjs",
+    "seed": "AWS_PROFILE=steryle-admin sst shell --stage production -- pnpm --filter @steryle/db seed",
+    "deploy:backend": "bash scripts/deploy-backend.sh",
+    "remove": "AWS_PROFILE=steryle-admin sst remove --stage production",
+    "dev:sst": "AWS_PROFILE=steryle-admin sst dev --stage production"
   },
   "devDependencies": {
+    "@types/node": "^20",
     "prettier": "^3.4.2",
+    "sst": "^3",
     "turbo": "^2.3.3",
     "typescript": "^5.7.2"
   },

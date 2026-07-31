@@ -1,5 +1,5 @@
 {
-  "name": "@stryle/core",
+  "name": "@steryle/core",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -15,7 +15,7 @@
     "test": "vitest run"
   },
   "devDependencies": {
-    "@stryle/config": "workspace:*",
+    "@steryle/config": "workspace:*",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"
   }

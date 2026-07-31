@@ -8,7 +8,7 @@ import {
   getProductsByCategory,
   sortProducts,
   type SortKey,
-} from '@stryle/core'
+} from '@steryle/core'
 import { ProductCard } from '@/components/ProductCard'
 import { ScreenHeader } from '@/components/ScreenHeader'
 import { Text } from '@/components/Text'

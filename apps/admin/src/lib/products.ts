@@ -1,7 +1,12 @@
 import 'server-only'
 
-import { and, asc, count, desc, eq, ilike, isNotNull, isNull, or, sql, type SQL } from 'drizzle-orm'
-import { categories, db, priceHistory, products } from '@stryle/db'
+import {
+  listAllProducts,
+  listCategories,
+  getProductBySku,
+  listPriceHistory,
+  type ProductRow,
+} from '@steryle/db'
 
 export const PRODUCT_PAGE_SIZE = 30
 
@@ -19,86 +24,80 @@ export type ProductFilters = {
   page?: number
 }
 
+function matches(filters: ProductFilters, product: ProductRow): boolean {
+  if (filters.query) {
+    const term = filters.query.trim().toLowerCase()
+    const hay = `${product.name} ${product.sku} ${product.brand}`.toLowerCase()
+    if (!hay.includes(term)) return false
+  }
+  if (filters.category && product.categorySlug !== filters.category) return false
+  if (filters.brand && product.brand !== filters.brand) return false
+  if (filters.stock === 'in' && !product.inStock) return false
+  if (filters.stock === 'out' && product.inStock) return false
+
+  if (filters.visibility === 'archived') {
+    if (!product.archivedAt) return false
+  } else {
+    if (product.archivedAt) return false
+    if (filters.visibility === 'hidden' && !product.isHidden) return false
+    if (filters.visibility === 'live' && product.isHidden) return false
+  }
+  return true
+}
+
+function sortProducts(rows: ProductRow[], sort: ProductSort): ProductRow[] {
+  const copy = [...rows]
+  copy.sort((a, b) => {
+    switch (sort) {
+      case 'name':
+        return a.name.localeCompare(b.name)
+      case 'price-asc':
+        return a.price - b.price
+      case 'price-desc':
+        return b.price - a.price
+      case 'discount': {
+        const da = a.mrp > 0 ? (a.mrp - a.price) / a.mrp : 0
+        const db = b.mrp > 0 ? (b.mrp - b.price) / b.mrp : 0
+        return db - da
+      }
+      case 'updated':
+        return b.updatedAt.getTime() - a.updatedAt.getTime()
+      case 'sku':
+      default:
+        return a.sku.localeCompare(b.sku)
+    }
+  })
+  return copy
+}
+
 export async function listProducts(filters: ProductFilters) {
   const page = Math.max(1, filters.page ?? 1)
-  const conditions: (SQL | undefined)[] = []
-
-  if (filters.query) {
-    const term = `%${filters.query.trim()}%`
-    conditions.push(
-      or(ilike(products.name, term), ilike(products.sku, term), ilike(products.brand, term)),
-    )
+  const all = await listAllProducts()
+  const filtered = sortProducts(
+    all.filter((p) => matches(filters, p)),
+    filters.sort ?? 'sku',
+  )
+  const start = (page - 1) * PRODUCT_PAGE_SIZE
+  return {
+    rows: filtered.slice(start, start + PRODUCT_PAGE_SIZE),
+    total: filtered.length,
+    page,
   }
-  if (filters.category) conditions.push(eq(products.categorySlug, filters.category))
-  if (filters.brand) conditions.push(eq(products.brand, filters.brand))
-  if (filters.stock) conditions.push(eq(products.inStock, filters.stock === 'in'))
-
-  /*
-   * Archived products are excluded unless explicitly asked for — "removed"
-   * rows should not clutter the default view, but they must stay reachable so
-   * a removal can be undone.
-   */
-  if (filters.visibility === 'archived') {
-    conditions.push(isNotNull(products.archivedAt))
-  } else {
-    conditions.push(isNull(products.archivedAt))
-    if (filters.visibility === 'hidden') conditions.push(eq(products.isHidden, true))
-    if (filters.visibility === 'live') conditions.push(eq(products.isHidden, false))
-  }
-
-  const where = and(...conditions)
-
-  const orderBy = {
-    sku: asc(products.sku),
-    name: asc(products.name),
-    'price-asc': asc(products.price),
-    'price-desc': desc(products.price),
-    discount: desc(sql`case when ${products.mrp} > 0 then (${products.mrp} - ${products.price})::float / ${products.mrp} else 0 end`),
-    updated: desc(products.updatedAt),
-  }[filters.sort ?? 'sku']
-
-  const [rows, [totals]] = await Promise.all([
-    db
-      .select()
-      .from(products)
-      .where(where)
-      .orderBy(orderBy)
-      .limit(PRODUCT_PAGE_SIZE)
-      .offset((page - 1) * PRODUCT_PAGE_SIZE),
-    db.select({ n: count() }).from(products).where(where),
-  ])
-
-  return { rows, total: totals?.n ?? 0, page }
 }
 
 export async function getProduct(sku: string) {
-  return db.query.products.findFirst({ where: eq(products.sku, sku) })
+  return getProductBySku(sku)
 }
 
 export async function getPriceHistory(sku: string, limit = 20) {
-  return db.query.priceHistory.findMany({
-    where: eq(priceHistory.sku, sku),
-    orderBy: desc(priceHistory.createdAt),
-    limit,
-  })
+  return listPriceHistory(sku, limit)
 }
 
-/** Filter dropdown options, ordered the way the storefront orders them. */
 export async function getFilterOptions() {
-  const [categoryRows, brandRows] = await Promise.all([
-    db
-      .select({ slug: categories.slug, name: categories.name })
-      .from(categories)
-      .orderBy(asc(categories.sortOrder)),
-    db
-      .selectDistinct({ brand: products.brand })
-      .from(products)
-      .where(isNull(products.archivedAt))
-      .orderBy(asc(products.brand)),
-  ])
-
+  const [categories, products] = await Promise.all([listCategories(), listAllProducts()])
+  const brands = [...new Set(products.filter((p) => !p.archivedAt).map((p) => p.brand))].sort()
   return {
-    categories: categoryRows,
-    brands: brandRows.map((b) => b.brand),
+    categories: categories.map((c) => ({ slug: c.slug, name: c.name })),
+    brands,
   }
 }

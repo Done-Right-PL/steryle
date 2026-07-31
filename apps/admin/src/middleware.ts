@@ -10,7 +10,7 @@ import { NextResponse, type NextRequest } from 'next/server'
  * which is where authorisation is actually enforced. Forging the cookie here
  * buys nothing but a redirect back to /login.
  */
-const COOKIE_NAME = 'stryle_admin_session'
+const COOKIE_NAME = 'steryle_admin_session'
 
 export function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl

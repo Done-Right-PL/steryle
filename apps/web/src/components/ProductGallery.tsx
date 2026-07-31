@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { useState } from 'react'
-import type { Product } from '@stryle/core'
+import type { Product } from '@steryle/core'
 import { CategoryIcon } from './Icons'
 import { iconForCategory } from '@/lib/category-icons'
 

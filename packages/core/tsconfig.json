@@ -1,9 +1,9 @@
 {
-  "extends": "@stryle/config/typescript/base",
+  "extends": "@steryle/config/typescript/base",
   "compilerOptions": {
     "paths": {
-      "@stryle/core": ["./src/index.ts"],
-      "@stryle/core/*": ["./src/*"]
+      "@steryle/core": ["./src/index.ts"],
+      "@steryle/core/*": ["./src/*"]
     }
   },
   "include": ["src/**/*.ts"],

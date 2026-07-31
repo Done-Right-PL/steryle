@@ -1,5 +1,5 @@
 import type { SVGProps } from 'react'
-import type { CategoryIconName } from '@stryle/core'
+import type { CategoryIconName } from '@steryle/core'
 
 type IconProps = SVGProps<SVGSVGElement>
 

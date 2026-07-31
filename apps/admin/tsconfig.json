@@ -1,13 +1,13 @@
 {
-  "extends": "@stryle/config/typescript/nextjs",
+  "extends": "@steryle/config/typescript/nextjs",
   "compilerOptions": {
     "jsx": "preserve",
     "paths": {
       "@/*": ["./src/*"],
-      "@stryle/core": ["../../packages/core/src/index.ts"],
-      "@stryle/core/*": ["../../packages/core/src/*"],
-      "@stryle/db": ["../../packages/db/src/index.ts"],
-      "@stryle/db/*": ["../../packages/db/src/*"]
+      "@steryle/core": ["../../packages/core/src/index.ts"],
+      "@steryle/core/*": ["../../packages/core/src/*"],
+      "@steryle/db": ["../../packages/db/src/index.ts"],
+      "@steryle/db/*": ["../../packages/db/src/*"]
     }
   },
   "include": [

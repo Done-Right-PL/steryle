@@ -23,7 +23,7 @@ export default async function PortalLayout({
     <div className="flex min-h-screen">
       <aside className="sticky top-0 hidden h-screen w-56 shrink-0 flex-col border-r border-paper-200 bg-paper px-5 py-6 lg:flex">
         <Link href="/" className="block">
-          <p className="text-lg font-semibold tracking-tight text-ink">Stryle</p>
+          <p className="text-lg font-semibold tracking-tight text-ink">Steryle</p>
           <p className="label mt-0.5">Operations</p>
         </Link>
 
@@ -43,7 +43,7 @@ export default async function PortalLayout({
           </form>
 
           <a
-            href="https://stryle.in"
+            href="https://steryle.in"
             target="_blank"
             rel="noreferrer"
             className="mt-2 block text-center text-[11px] text-ink-300 hover:text-ink"
@@ -57,7 +57,7 @@ export default async function PortalLayout({
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex items-center justify-between border-b border-paper-200 bg-paper px-5 py-3 lg:hidden">
           <Link href="/" className="text-base font-semibold tracking-tight text-ink">
-            Stryle Operations
+            Steryle Operations
           </Link>
           <form action={signOutAction}>
             <button type="submit" className="btn-quiet">

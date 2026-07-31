@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import type { Product } from '@stryle/core'
+import type { Product } from '@steryle/core'
 import { AddToCartButton } from './AddToCartButton'
 import { useCart } from '@/lib/cart-store'
 import { QtyStepper } from './QtyStepper'

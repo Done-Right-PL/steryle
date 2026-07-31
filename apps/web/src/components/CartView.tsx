@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { formatINR, FREE_SHIPPING_THRESHOLD } from '@stryle/core'
+import { formatINR, FREE_SHIPPING_THRESHOLD } from '@steryle/core'
 import { useCart } from '@/lib/cart-store'
 import { Icon } from './Icons'
 import { QtyStepper } from './QtyStepper'

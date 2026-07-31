@@ -1,6 +1,6 @@
 import { Link } from 'expo-router'
 import { Pressable, View } from 'react-native'
-import { formatINR, type Product } from '@stryle/core'
+import { formatINR, type Product } from '@steryle/core'
 import { ProductPhoto } from './ProductPhoto'
 import { Rating } from './Rating'
 import { Text } from './Text'

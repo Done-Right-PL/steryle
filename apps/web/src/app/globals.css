@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /*
- * Stryle's blue marketplace theme. Brand blue carries primary actions and
+ * Steryle's blue marketplace theme. Brand blue carries primary actions and
  * wayfinding, teal marks secondary emphasis, and the neutral scale is cool
  * tinted so it sits with the blues. Values mirror packages/config/tokens.js,
  * which apps/mobile reads for the same palette.

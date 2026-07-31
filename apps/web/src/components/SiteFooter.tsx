@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { categories, products, topBrands } from '@stryle/core'
+import { categories, products, topBrands } from '@steryle/core'
 import { Icon } from './Icons'
 
 const SUPPORT_LINKS = [
@@ -34,8 +34,8 @@ export function SiteFooter() {
             <a href="tel:+911800123456" className="flex items-center gap-2 hover:text-brand-700">
               <Icon.phone width={16} height={16} className="text-brand-600" /> 1800-123-456
             </a>
-            <a href="mailto:care@stryle.in" className="flex items-center gap-2 hover:text-brand-700">
-              <Icon.mail width={16} height={16} className="text-brand-600" /> care@stryle.in
+            <a href="mailto:care@steryle.in" className="flex items-center gap-2 hover:text-brand-700">
+              <Icon.mail width={16} height={16} className="text-brand-600" /> care@steryle.in
             </a>
             <p className="flex items-center gap-2">
               <Icon.pin width={16} height={16} className="text-brand-600" /> Sector 62, Noida, UP
@@ -90,7 +90,7 @@ export function SiteFooter() {
 
       <div className="border-t border-paper-200">
         <div className="container-x flex flex-col gap-3 py-6 text-xs text-ink-400 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} Stryle. Demo storefront — not a real pharmacy.</p>
+          <p>© {new Date().getFullYear()} Steryle. Demo storefront — not a real pharmacy.</p>
           <p>Prices inclusive of GST.</p>
         </div>
       </div>

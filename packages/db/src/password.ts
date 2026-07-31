@@ -10,7 +10,14 @@
 import { randomBytes, scrypt as scryptCb, timingSafeEqual } from 'node:crypto'
 import { promisify } from 'node:util'
 
-const scrypt = promisify(scryptCb)
+type ScryptFn = (
+  password: string | Buffer,
+  salt: string | Buffer,
+  keylen: number,
+  options: { N: number; r: number; p: number; maxmem: number },
+) => Promise<Buffer>
+
+const scrypt = promisify(scryptCb) as unknown as ScryptFn
 
 const COST = { N: 16384, r: 8, p: 1 } as const
 const KEY_LENGTH = 64

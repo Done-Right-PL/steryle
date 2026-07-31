@@ -1,4 +1,4 @@
-import tokens from '@stryle/config/tokens'
+import tokens from '@steryle/config/tokens'
 
 /**
  * Imperative mirror of tailwind.config.js, for the places that can't take

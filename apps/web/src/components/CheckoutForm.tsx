@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import { formatINR } from '@stryle/core'
+import { formatINR } from '@steryle/core'
 import { useCart } from '@/lib/cart-store'
 import { Icon } from './Icons'
 

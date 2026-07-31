@@ -6,6 +6,6 @@ module.exports = ({ config }) => ({
   ...config,
   extra: {
     ...config.extra,
-    apiUrl: process.env.EXPO_PUBLIC_API_URL ?? 'https://stryle.in',
+    apiUrl: process.env.EXPO_PUBLIC_API_URL ?? 'https://steryle.in',
   },
 })

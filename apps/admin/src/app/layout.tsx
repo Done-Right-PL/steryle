@@ -9,12 +9,12 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://admin.stryle.in'),
+  metadataBase: new URL('https://admin.steryle.in'),
   title: {
-    default: 'Stryle Admin',
-    template: '%s · Stryle Admin',
+    default: 'Steryle Admin',
+    template: '%s · Steryle Admin',
   },
-  description: 'Internal operations console for the Stryle marketplace.',
+  description: 'Internal operations console for the Steryle marketplace.',
   robots: { index: false, follow: false },
 }
 
