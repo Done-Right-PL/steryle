@@ -30,8 +30,8 @@ export function SiteHeader() {
             <Icon.truck width={15} height={15} /> Free shipping on orders over ₹999
           </span>
           <div className="flex items-center gap-4">
-            <a href="tel:+911800123456" className="flex items-center gap-1.5 hover:underline">
-              <Icon.phone width={14} height={14} /> 1800-123-456
+            <a href="tel:+917822058149" className="flex items-center gap-1.5 hover:underline">
+              <Icon.phone width={14} height={14} /> 7822058149
             </a>
             <span className="hidden sm:inline">GST invoice on all orders</span>
           </div>

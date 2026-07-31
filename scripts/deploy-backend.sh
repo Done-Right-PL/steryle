@@ -14,8 +14,11 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-AWS_PROFILE="${AWS_PROFILE:-steryle-admin}"
-AWS_REGION="${AWS_REGION:-ap-south-1}"
+# Always target the Steryle account unless explicitly overridden.
+# Do NOT inherit ambient AWS_PROFILE / AWS_REGION from the shell — that caused
+# a deploy into the wrong account when another profile was exported.
+AWS_PROFILE="${STERYLE_AWS_PROFILE:-steryle-admin}"
+AWS_REGION="${STERYLE_AWS_REGION:-ap-south-1}"
 stage="production"
 
 export AWS_PROFILE AWS_REGION
@@ -52,5 +55,6 @@ else
 fi
 
 echo
-echo "Amplify env: API_URL / NEXT_PUBLIC_API_URL = <api url from outputs>"
+echo "Public API: https://api.steryle.in"
+echo "Amplify env: API_URL / NEXT_PUBLIC_API_URL = https://api.steryle.in"
 echo "Admin/local: TABLE_NAME=<table from outputs> AWS_PROFILE=$AWS_PROFILE"

@@ -45,9 +45,9 @@ export default $config({
       "https://admin.steryle.in",
     ];
 
-    // Attach a custom domain once Route53 for steryle.in exists:
-    // const apiDomain = $app.stage === "production" ? "api.steryle.in" : undefined;
-    const apiDomain = undefined;
+    // Production owns the public API hostname (Route53 zone: steryle.in).
+    const apiDomain =
+      $app.stage === "production" ? "api.steryle.in" : undefined;
 
     const api = new sst.aws.ApiGatewayV2("Api", {
       ...(apiDomain ? { domain: apiDomain } : {}),

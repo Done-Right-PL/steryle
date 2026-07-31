@@ -31,15 +31,15 @@ export function SiteFooter() {
             {topBrands.length}+ trusted brands, sourced direct and delivered across India.
           </p>
           <div className="mt-4 space-y-2 text-sm text-ink-600">
-            <a href="tel:+911800123456" className="flex items-center gap-2 hover:text-brand-700">
-              <Icon.phone width={16} height={16} className="text-brand-600" /> 1800-123-456
+            <a href="tel:+917822058149" className="flex items-center gap-2 hover:text-brand-700">
+              <Icon.phone width={16} height={16} className="text-brand-600" /> 7822058149
             </a>
-            <a href="mailto:care@steryle.in" className="flex items-center gap-2 hover:text-brand-700">
-              <Icon.mail width={16} height={16} className="text-brand-600" /> care@steryle.in
+            <a href="mailto:support@steryle.in" className="flex items-center gap-2 hover:text-brand-700">
+              <Icon.mail width={16} height={16} className="text-brand-600" /> support@steryle.in
             </a>
             <p className="flex items-center gap-2">
-              <Icon.pin width={16} height={16} className="text-brand-600" /> Sector 62, Noida, UP
-              201301
+              <Icon.pin width={16} height={16} className="text-brand-600" /> Tathawade, Pune, MH
+              411033
             </p>
           </div>
         </div>
