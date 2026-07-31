@@ -23,7 +23,7 @@ export function SiteFooter() {
               <Icon.plus width={20} height={20} />
             </span>
             <span className="text-lg font-extrabold text-ink-900">
-              Stry<span className="text-brand-600">le</span>
+              Ster<span className="text-brand-600">yle</span>
             </span>
           </Link>
           <p className="mt-3 text-sm text-ink-500">

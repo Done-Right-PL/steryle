@@ -54,7 +54,7 @@ export function SiteHeader() {
             <Icon.plus width={20} height={20} />
           </span>
           <span className="text-lg font-extrabold tracking-tight text-ink-900">
-            Stry<span className="text-brand-600">le</span>
+            Ster<span className="text-brand-600">yle</span>
           </span>
         </Link>
 

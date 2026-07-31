@@ -18,7 +18,7 @@ export default function ShopScreen() {
             <Ionicons name="add" size={20} color={colors.paper} />
           </View>
           <Text className="font-semibold text-[20px] tracking-tight text-ink-900">
-            Stry<Text className="text-brand-600">le</Text>
+            Ster<Text className="text-brand-600">yle</Text>
           </Text>
         </View>
 
