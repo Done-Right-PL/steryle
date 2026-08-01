@@ -10,6 +10,7 @@ import type {
   OrderRow,
   PriceHistoryRow,
   ProductRow,
+  QuoteRequestRow,
 } from './types'
 
 const toDate = (value: unknown): Date => {
@@ -82,6 +83,11 @@ export const keys = {
   audit: (createdAt: string, id: string) => ({
     pk: `AUDIT#${createdAt.slice(0, 10)}`,
     sk: `AUDIT#${createdAt}#${id}`,
+  }),
+  quote: (id: string) => ({ pk: `QUOTE#${id}`, sk: 'QUOTE' }),
+  quotesIndex: (createdAt: string, id: string) => ({
+    gsi1pk: 'QUOTES',
+    gsi1sk: `CREATED#${createdAt}#${id}`,
   }),
 }
 
@@ -234,5 +240,18 @@ export function auditFromItem(item: DynItem): AuditLogRow {
     entityId: String(item.entityId),
     detail: (item.detail as Record<string, unknown> | null) ?? null,
     createdAt: toDate(item.createdAt),
+  }
+}
+
+export function quoteFromItem(item: DynItem): QuoteRequestRow {
+  return {
+    id: String(item.id),
+    organisation: String(item.organisation),
+    requirement: String(item.requirement),
+    contactName: item.contactName == null ? null : String(item.contactName),
+    contactPhone: item.contactPhone == null ? null : String(item.contactPhone),
+    status: (item.status as QuoteRequestRow['status']) || 'new',
+    createdAt: toDate(item.createdAt),
+    updatedAt: toDate(item.updatedAt),
   }
 }

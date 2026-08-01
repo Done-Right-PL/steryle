@@ -144,6 +144,19 @@ export type AuditLogRow = {
   createdAt: Date
 }
 
+export type QuoteStatus = 'new' | 'contacted' | 'closed'
+
+export type QuoteRequestRow = {
+  id: string
+  organisation: string
+  requirement: string
+  contactName: string | null
+  contactPhone: string | null
+  status: QuoteStatus
+  createdAt: Date
+  updatedAt: Date
+}
+
 /** Raw DynamoDB item envelope. */
 export type DynItem = Record<string, unknown> & {
   pk: string
