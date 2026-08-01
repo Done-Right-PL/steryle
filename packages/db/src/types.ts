@@ -87,6 +87,8 @@ export type CustomerRow = {
   city: string | null
   state: string | null
   gstin: string | null
+  /** Legal / trade name on the GST registration (for invoices). */
+  gstCompanyName: string | null
   status: CustomerStatus
   marketingOptIn: boolean
   lastSeenAt: Date | null

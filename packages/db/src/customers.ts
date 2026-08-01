@@ -78,6 +78,7 @@ export async function putCustomer(
     city: row.city,
     state: row.state,
     gstin: row.gstin,
+    gstCompanyName: row.gstCompanyName,
     status: row.status,
     marketingOptIn: row.marketingOptIn,
     lastSeenAt: row.lastSeenAt ? row.lastSeenAt.toISOString() : null,

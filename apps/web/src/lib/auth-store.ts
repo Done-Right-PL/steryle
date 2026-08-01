@@ -7,6 +7,9 @@ export type CustomerSession = {
   name: string
   phone: string
   email: string | null
+  city?: string | null
+  gstin?: string | null
+  gstCompanyName?: string | null
 }
 
 type Snapshot = {

@@ -90,6 +90,8 @@ export const keys = {
     gsi1sk: `CREATED#${createdAt}#${id}`,
   }),
   otp: (phone: string) => ({ pk: `OTP#CUSTOMER#${phone}`, sk: 'PENDING' }),
+  /** Short-lived proof that OTP was verified and registration can proceed. */
+  phoneRegTicket: (tokenHash: string) => ({ pk: `PREG#${tokenHash}`, sk: 'TICKET' }),
   customerSession: (tokenHash: string) => ({ pk: `CSESSION#${tokenHash}`, sk: 'SESSION' }),
   cartLine: (customerId: string, sku: string) => ({
     pk: `CUSTOMER#${customerId}`,
@@ -192,6 +194,7 @@ export function customerFromItem(item: DynItem): CustomerRow {
     city: item.city == null ? null : String(item.city),
     state: item.state == null ? null : String(item.state),
     gstin: item.gstin == null ? null : String(item.gstin),
+    gstCompanyName: item.gstCompanyName == null ? null : String(item.gstCompanyName),
     status: item.status as CustomerRow['status'],
     marketingOptIn: Boolean(item.marketingOptIn),
     lastSeenAt: toDateOrNull(item.lastSeenAt),

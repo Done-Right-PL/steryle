@@ -6,11 +6,14 @@ import {
   clearCart,
   clearCustomerSession,
   confirmOrderPayment,
+  consumePhoneRegistrationTicket,
   createCustomerSession,
+  createPhoneRegistrationTicket,
   createQuoteRequest,
   createRazorpayOrder,
   generateOtp,
   getCart,
+  getCustomerByPhone,
   getOrderById,
   getOrdersForCustomer,
   getOverview,
@@ -19,6 +22,8 @@ import {
   getSessionCustomer,
   getWishlist,
   isRazorpayMock,
+  isValidEmail,
+  isValidGstin,
   isValidPhone,
   listAllCustomers,
   listAllProducts,
@@ -30,18 +35,20 @@ import {
   putCustomer,
   putOrder,
   razorpayKeyId,
+  registerCustomer,
   removeCartLine,
   removeWishlistItem,
   replaceCart,
   rupeesToPaise,
   saveOtp,
   tableName,
+  touchCustomerByPhone,
   updateQuoteStatus,
-  upsertCustomerByPhone,
   verifyOtp,
   verifyPaymentSignature,
   withRequestContext,
   type AccountCartLine,
+  type CustomerRow,
   type QuoteStatus,
 } from '@steryle/db'
 import { cartTotals } from '@steryle/core'
@@ -53,6 +60,18 @@ function isLambdaRuntime() {
 }
 
 const QUOTE_STATUSES = new Set<QuoteStatus>(['new', 'contacted', 'closed'])
+
+function publicCustomer(customer: CustomerRow) {
+  return {
+    id: customer.id,
+    name: customer.name,
+    phone: customer.phone,
+    email: customer.email,
+    city: customer.city,
+    gstin: customer.gstin,
+    gstCompanyName: customer.gstCompanyName,
+  }
+}
 
 async function requireCustomer() {
   const customer = await getSessionCustomer()
@@ -136,7 +155,6 @@ export function createApp() {
     const body = await c.req.json().catch(() => null)
     const phone = normalizePhone(typeof body?.phone === 'string' ? body.phone : '')
     const otp = typeof body?.otp === 'string' ? body.otp.trim() : ''
-    const name = typeof body?.name === 'string' ? body.name.trim() : undefined
     if (!isValidPhone(phone)) {
       return c.json({ error: 'Enter a valid 10-digit mobile number.' }, 400)
     }
@@ -147,7 +165,81 @@ export function createApp() {
     const result = await verifyOtp(phone, otp)
     if (!result.ok) return c.json({ error: result.error }, 401)
 
-    const customer = await upsertCustomerByPhone(phone, name)
+    const existing = await touchCustomerByPhone(phone)
+    if (!existing) {
+      const registrationToken = await createPhoneRegistrationTicket(phone)
+      return c.json({
+        ok: true,
+        needsRegistration: true,
+        phone,
+        registrationToken,
+      })
+    }
+
+    await createCustomerSession(existing.id)
+
+    const guestLines = Array.isArray(body?.cart) ? (body.cart as AccountCartLine[]) : []
+    if (guestLines.length > 0) {
+      await mergeCart(
+        existing.id,
+        guestLines.filter((l) => l?.sku && l.qty > 0),
+      )
+    }
+
+    const cart = await getCart(existing.id)
+    return c.json({
+      ok: true,
+      needsRegistration: false,
+      customer: publicCustomer(existing),
+      cart,
+    })
+  })
+
+  app.post('/api/account/register', async (c) => {
+    const body = await c.req.json().catch(() => null)
+    const phone = normalizePhone(typeof body?.phone === 'string' ? body.phone : '')
+    const registrationToken =
+      typeof body?.registrationToken === 'string' ? body.registrationToken : ''
+    const name = typeof body?.name === 'string' ? body.name.trim() : ''
+    const email = typeof body?.email === 'string' ? body.email.trim() : ''
+    const gstinRaw = typeof body?.gstin === 'string' ? body.gstin.trim() : ''
+    const gstCompanyName =
+      typeof body?.gstCompanyName === 'string' ? body.gstCompanyName.trim() : ''
+
+    if (!isValidPhone(phone)) {
+      return c.json({ error: 'Enter a valid 10-digit mobile number.' }, 400)
+    }
+    if (name.length < 2 || name.length > 120) {
+      return c.json({ error: 'Enter your full name.' }, 400)
+    }
+    if (!isValidEmail(email)) {
+      return c.json({ error: 'Enter a valid email address.' }, 400)
+    }
+    if (gstinRaw && !isValidGstin(gstinRaw)) {
+      return c.json({ error: 'Enter a valid 15-character GSTIN.' }, 400)
+    }
+    if (gstinRaw && gstCompanyName.length < 2) {
+      return c.json({ error: 'Enter the GST registered company name for invoices.' }, 400)
+    }
+    if (!gstinRaw && gstCompanyName) {
+      return c.json({ error: 'Add your GSTIN to save the company name for invoices.' }, 400)
+    }
+
+    const ticket = await consumePhoneRegistrationTicket(phone, registrationToken)
+    if (!ticket.ok) return c.json({ error: ticket.error }, 401)
+
+    // Race: another request may have registered this phone.
+    const already = await getCustomerByPhone(phone)
+    const customer =
+      already ??
+      (await registerCustomer({
+        phone,
+        name,
+        email,
+        gstin: gstinRaw || null,
+        gstCompanyName: gstCompanyName || null,
+      }))
+
     await createCustomerSession(customer.id)
 
     const guestLines = Array.isArray(body?.cart) ? (body.cart as AccountCartLine[]) : []
@@ -158,32 +250,17 @@ export function createApp() {
       )
     }
 
-    const cart = await getCart(customer.id)
     return c.json({
       ok: true,
-      customer: {
-        id: customer.id,
-        name: customer.name,
-        phone: customer.phone,
-        email: customer.email,
-      },
-      cart,
+      customer: publicCustomer(customer),
+      cart: await getCart(customer.id),
     })
   })
 
   app.get('/api/account/me', async (c) => {
     const customer = await requireCustomer()
     if (!customer) return c.json({ customer: null }, 401)
-    return c.json({
-      customer: {
-        id: customer.id,
-        name: customer.name,
-        phone: customer.phone,
-        email: customer.email,
-        city: customer.city,
-        gstin: customer.gstin,
-      },
-    })
+    return c.json({ customer: publicCustomer(customer) })
   })
 
   app.post('/api/account/logout', async (c) => {
@@ -195,15 +272,38 @@ export function createApp() {
     const customer = await requireCustomer()
     if (!customer) return c.json({ error: 'Sign in required.' }, 401)
     const body = await c.req.json().catch(() => null)
+
+    const nextGstin =
+      typeof body?.gstin === 'string'
+        ? body.gstin.trim().toUpperCase() || null
+        : customer.gstin
+    const nextGstCompany =
+      typeof body?.gstCompanyName === 'string'
+        ? body.gstCompanyName.trim() || null
+        : customer.gstCompanyName
+    if (nextGstin && !isValidGstin(nextGstin)) {
+      return c.json({ error: 'Enter a valid 15-character GSTIN.' }, 400)
+    }
+    if (nextGstin && !nextGstCompany) {
+      return c.json({ error: 'Enter the GST registered company name for invoices.' }, 400)
+    }
+
+    const nextEmail =
+      typeof body?.email === 'string' ? body.email.trim().toLowerCase() || null : customer.email
+    if (nextEmail && !isValidEmail(nextEmail)) {
+      return c.json({ error: 'Enter a valid email address.' }, 400)
+    }
+
     const updated = await putCustomer({
       ...customer,
       name: typeof body?.name === 'string' && body.name.trim() ? body.name.trim() : customer.name,
-      email: typeof body?.email === 'string' ? body.email.trim() || null : customer.email,
+      email: nextEmail,
       city: typeof body?.city === 'string' ? body.city.trim() || null : customer.city,
-      gstin: typeof body?.gstin === 'string' ? body.gstin.trim() || null : customer.gstin,
+      gstin: nextGstin,
+      gstCompanyName: nextGstin ? nextGstCompany : null,
       updatedAt: new Date(),
     })
-    return c.json({ customer: updated })
+    return c.json({ customer: publicCustomer(updated) })
   })
 
   /* -------------------------------- Cart -------------------------------- */

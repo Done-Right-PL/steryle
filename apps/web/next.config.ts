@@ -9,6 +9,8 @@ const apiUrl = (
 const nextConfig: NextConfig = {
   transpilePackages: ['@steryle/core'],
   serverExternalPackages: ['sst'],
+  // Phone / other devices on the LAN opening http://<this-machine-ip>:4173
+  allowedDevOrigins: ['192.168.68.101', '127.0.0.1', 'localhost'],
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'd29azk3rh443yy.cloudfront.net' },

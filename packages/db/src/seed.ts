@@ -163,6 +163,7 @@ async function seed() {
       city,
       state,
       gstin: isInstitution ? `27AAACS${String(1000 + i).padStart(4, '0')}A1Z${i % 10}` : null,
+      gstCompanyName: isInstitution ? name : null,
       status: rng() < 0.04 ? 'blocked' : 'active',
       marketingOptIn: rng() < 0.72,
       createdAt: daysAgo(joinedDaysAgo),

@@ -214,7 +214,12 @@ export function CheckoutForm() {
               <Field label="Address" name="address" className="sm:col-span-2" />
               <Field label="City" name="city" autoComplete="address-level2" />
               <Field label="PIN code" name="pin" inputMode="numeric" autoComplete="postal-code" />
-              <Field label="GSTIN (optional)" name="gstin" required={false} />
+              <Field
+                label="GSTIN (optional)"
+                name="gstin"
+                required={false}
+                defaultValue={customer.gstin ?? ''}
+              />
             </div>
           </fieldset>
 

@@ -143,6 +143,7 @@ export default async function CustomerDetailPage({
                 {customer.city ? `${customer.city}, ${customer.state ?? ''}`.replace(/,\s*$/, '') : '—'}
               </Detail>
               <Detail label="GSTIN">{customer.gstin ?? '—'}</Detail>
+              <Detail label="GST company">{customer.gstCompanyName ?? '—'}</Detail>
               <Detail label="First order">{formatDate(stats.firstOrderAt)}</Detail>
               <Detail label="Last order">{formatDate(stats.lastOrderAt)}</Detail>
               <Detail label="Joined">{formatDateTime(customer.createdAt)}</Detail>

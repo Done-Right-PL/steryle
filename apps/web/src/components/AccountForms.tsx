@@ -16,19 +16,26 @@ function normalizePhone(raw: string) {
 export function AccountSignIn() {
   const { customer, hydrated, logout, refresh } = useCustomer()
   const { replace } = useCart()
-  const [step, setStep] = useState<'phone' | 'otp'>('phone')
+  const [step, setStep] = useState<'phone' | 'otp' | 'register'>('phone')
   const [phone, setPhone] = useState('')
   const [otp, setOtp] = useState('')
+  const [registrationToken, setRegistrationToken] = useState('')
   const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [gstin, setGstin] = useState('')
+  const [gstCompanyName, setGstCompanyName] = useState('')
+  const [wantGstInvoice, setWantGstInvoice] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [orders, setOrders] = useState<
     Array<{ id: string; reference: string; total: number; status: string; placedAt: string }>
   >([])
   const otpRef = useRef<HTMLInputElement>(null)
+  const nameRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (step === 'otp') otpRef.current?.focus()
+    if (step === 'register') nameRef.current?.focus()
   }, [step])
 
   useEffect(() => {
@@ -76,6 +83,15 @@ export function AccountSignIn() {
           </p>
           <p className="mt-2 text-lg font-semibold tracking-tight text-ink-900">{customer.name}</p>
           <p className="mt-0.5 text-[13px] text-ink-500">+91 {customer.phone}</p>
+          {customer.email ? (
+            <p className="mt-0.5 text-[13px] text-ink-500">{customer.email}</p>
+          ) : null}
+          {customer.gstin ? (
+            <p className="mt-2 text-[12px] text-ink-400">
+              GST {customer.gstin}
+              {customer.gstCompanyName ? ` · ${customer.gstCompanyName}` : ''}
+            </p>
+          ) : null}
           <div className="mt-5 flex flex-wrap gap-2">
             <Link href="/cart" className="btn-primary">
               View cart
@@ -93,6 +109,12 @@ export function AccountSignIn() {
                 setStep('phone')
                 setPhone('')
                 setOtp('')
+                setRegistrationToken('')
+                setName('')
+                setEmail('')
+                setGstin('')
+                setGstCompanyName('')
+                setWantGstInvoice(false)
               }}
             >
               Sign out
@@ -153,6 +175,17 @@ export function AccountSignIn() {
     }
   }
 
+  const finishSignIn = async (data: {
+    customer?: Parameters<typeof setCustomer>[0]
+    cart?: Parameters<typeof replace>[0]
+  }) => {
+    if (!data.customer) return
+    setCustomer(data.customer)
+    cartStore.setAuthed(true)
+    if (data.cart) replace(data.cart)
+    await refresh()
+  }
+
   const verifyOtp = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
@@ -168,28 +201,193 @@ export function AccountSignIn() {
         body: JSON.stringify({
           phone,
           otp: code,
-          name: name.trim() || undefined,
           cart: cartStore.getLines(),
         }),
       })
       const data = (await res.json()) as {
         error?: string
-        customer?: { id: string; name: string; phone: string; email: string | null }
+        needsRegistration?: boolean
+        registrationToken?: string
+        customer?: Parameters<typeof setCustomer>[0]
         cart?: Parameters<typeof replace>[0]
       }
-      if (!res.ok || !data.customer) {
+      if (!res.ok) {
         setError(data.error || 'Could not verify OTP.')
         return
       }
-      setCustomer(data.customer)
-      cartStore.setAuthed(true)
-      if (data.cart) replace(data.cart)
-      await refresh()
+      if (data.needsRegistration) {
+        setRegistrationToken(data.registrationToken || '')
+        setStep('register')
+        return
+      }
+      if (!data.customer) {
+        setError(data.error || 'Could not verify OTP.')
+        return
+      }
+      await finishSignIn(data)
     } catch {
       setError('Network error — try again.')
     } finally {
       setBusy(false)
     }
+  }
+
+  const register = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    if (name.trim().length < 2) {
+      setError('Enter your full name.')
+      return
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError('Enter a valid email address.')
+      return
+    }
+    const gst = gstin.replace(/\s/g, '').toUpperCase()
+    if (wantGstInvoice) {
+      if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/i.test(gst)) {
+        setError('Enter a valid 15-character GSTIN.')
+        return
+      }
+      if (gstCompanyName.trim().length < 2) {
+        setError('Enter the GST registered company name.')
+        return
+      }
+    }
+    setBusy(true)
+    try {
+      const res = await apiFetch('/api/account/register', {
+        method: 'POST',
+        body: JSON.stringify({
+          phone,
+          registrationToken,
+          name: name.trim(),
+          email: email.trim(),
+          gstin: wantGstInvoice ? gst : undefined,
+          gstCompanyName: wantGstInvoice ? gstCompanyName.trim() : undefined,
+          cart: cartStore.getLines(),
+        }),
+      })
+      const data = (await res.json()) as {
+        error?: string
+        customer?: Parameters<typeof setCustomer>[0]
+        cart?: Parameters<typeof replace>[0]
+      }
+      if (!res.ok || !data.customer) {
+        setError(data.error || 'Could not create your account.')
+        return
+      }
+      await finishSignIn(data)
+    } catch {
+      setError('Network error — try again.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  if (step === 'register') {
+    return (
+      <form className="mt-6 space-y-4" onSubmit={register} noValidate>
+        <p className="text-[13px] leading-relaxed text-ink-500">
+          First time here — tell us a few details for{' '}
+          <span className="font-semibold text-ink-800">+91 {phone}</span>.
+        </p>
+        <label className="block">
+          <span className="mb-1.5 block text-[12px] font-medium text-ink-600">Full name</span>
+          <input
+            ref={nameRef}
+            className="field"
+            placeholder="As on delivery / invoice"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            autoComplete="name"
+            required
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1.5 block text-[12px] font-medium text-ink-600">Mobile</span>
+          <input className="field" value={`+91 ${phone}`} readOnly disabled />
+        </label>
+        <label className="block">
+          <span className="mb-1.5 block text-[12px] font-medium text-ink-600">Email</span>
+          <input
+            type="email"
+            className="field"
+            placeholder="you@clinic.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+            required
+          />
+        </label>
+
+        <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-paper-200 px-4 py-3">
+          <input
+            type="checkbox"
+            className="mt-0.5 accent-brand-600"
+            checked={wantGstInvoice}
+            onChange={(e) => setWantGstInvoice(e.target.checked)}
+          />
+          <span>
+            <span className="block text-[13px] font-medium text-ink-800">
+              I need a GST invoice
+            </span>
+            <span className="mt-0.5 block text-[12px] text-ink-400">
+              Optional — add GSTIN and registered company name
+            </span>
+          </span>
+        </label>
+
+        {wantGstInvoice ? (
+          <div className="space-y-4">
+            <label className="block">
+              <span className="mb-1.5 block text-[12px] font-medium text-ink-600">GSTIN</span>
+              <input
+                className="field uppercase"
+                placeholder="15-character GSTIN"
+                value={gstin}
+                maxLength={15}
+                onChange={(e) => setGstin(e.target.value.replace(/\s/g, '').toUpperCase().slice(0, 15))}
+                autoComplete="off"
+              />
+            </label>
+            <label className="block">
+              <span className="mb-1.5 block text-[12px] font-medium text-ink-600">
+                GST company name
+              </span>
+              <input
+                className="field"
+                placeholder="Registered business / trade name"
+                value={gstCompanyName}
+                onChange={(e) => setGstCompanyName(e.target.value)}
+                autoComplete="organization"
+              />
+            </label>
+          </div>
+        ) : null}
+
+        {error ? (
+          <p role="alert" className="text-[12px] text-danger-600">
+            {error}
+          </p>
+        ) : null}
+        <button type="submit" className="btn-primary w-full" disabled={busy}>
+          {busy ? 'Creating account…' : 'Create account'}
+        </button>
+        <button
+          type="button"
+          className="btn-quiet w-full"
+          onClick={() => {
+            setStep('phone')
+            setOtp('')
+            setRegistrationToken('')
+            setError(null)
+          }}
+        >
+          Start over
+        </button>
+      </form>
+    )
   }
 
   if (step === 'otp') {
@@ -209,16 +407,6 @@ export function AccountSignIn() {
             Change number
           </button>
         </p>
-        <label className="block">
-          <span className="mb-1.5 block text-[12px] font-medium text-ink-600">Your name</span>
-          <input
-            className="field"
-            placeholder="Optional — used on invoices"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            autoComplete="name"
-          />
-        </label>
         <label className="block">
           <span className="mb-1.5 block text-[12px] font-medium text-ink-600">One-time password</span>
           <input

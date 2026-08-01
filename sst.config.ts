@@ -40,6 +40,7 @@ export default $config({
       "http://127.0.0.1:4173",
       "http://localhost:4174",
       "http://127.0.0.1:4174",
+      "http://192.168.68.101:4173",
       "https://steryle.in",
       "https://www.steryle.in",
       "https://admin.steryle.in",
