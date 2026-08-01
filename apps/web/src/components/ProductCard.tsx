@@ -3,6 +3,7 @@ import { formatINR, type Product } from '@steryle/core'
 import { AddToCartButton } from './AddToCartButton'
 import { ProductImage } from './ProductImage'
 import { Rating } from './Rating'
+import { WishlistButton } from './WishlistButton'
 
 interface Props {
   product: Product
@@ -30,7 +31,10 @@ export function ProductCard({ product, priority }: Props) {
               Out of stock
             </span>
           )}
-          <span className="absolute bottom-2 right-2 text-[10px] text-ink-300">{product.sku}</span>
+          <span className="absolute bottom-2 left-2 text-[10px] text-ink-300">{product.sku}</span>
+          <span className="absolute bottom-1.5 right-1.5 rounded-full bg-white/90 shadow-sm">
+            <WishlistButton product={product} />
+          </span>
         </div>
       </Link>
 

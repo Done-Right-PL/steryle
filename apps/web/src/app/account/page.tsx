@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { AccountSignIn, BulkQuoteForm } from '@/components/AccountForms'
+import { WishlistPanel } from '@/components/WishlistPanel'
 
 export const metadata: Metadata = { title: 'Account & support' }
 
@@ -34,11 +35,12 @@ export default function AccountPage() {
 
       <div className="mt-8 grid gap-10 sm:mt-12 lg:mt-14 lg:grid-cols-2 lg:gap-20">
         <section className="min-w-0">
-          <h2 className="label">Sign in</h2>
+          <h2 className="label">Account</h2>
           <p className="mt-3 text-[13px] leading-relaxed text-ink-400 sm:mt-4">
-            Enter your mobile number and we&apos;ll send a one-time password.
+            Sign in with your mobile number to sync cart, wishlist and orders.
           </p>
           <AccountSignIn />
+          <WishlistPanel />
         </section>
 
         <section className="min-w-0 border-t border-paper-200 pt-10 lg:border-t-0 lg:pt-0">

@@ -1,11 +1,10 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
-
-const MOCK_OTP = '123456'
-const STORAGE_KEY = 'steryle.account.mock.v1'
-
-type Session = { phone: string; signedInAt: string }
+import { formatINR } from '@steryle/core'
+import { apiFetch, useCustomer, setCustomer } from '@/lib/auth-store'
+import { cartStore, useCart } from '@/lib/cart-store'
 
 function normalizePhone(raw: string) {
   const digits = raw.replace(/\D/g, '')
@@ -14,100 +13,147 @@ function normalizePhone(raw: string) {
   return digits
 }
 
-function isValidPhone(phone: string) {
-  return /^\d{10}$/.test(phone)
-}
-
-function loadSession(): Session | null {
-  if (typeof window === 'undefined') return null
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return null
-    const parsed = JSON.parse(raw) as Session
-    if (!parsed?.phone) return null
-    return parsed
-  } catch {
-    return null
-  }
-}
-
-function saveSession(session: Session | null) {
-  if (session) localStorage.setItem(STORAGE_KEY, JSON.stringify(session))
-  else localStorage.removeItem(STORAGE_KEY)
-}
-
 export function AccountSignIn() {
-  const [session, setSession] = useState<Session | null>(null)
-  const [ready, setReady] = useState(false)
+  const { customer, hydrated, logout, refresh } = useCustomer()
+  const { replace } = useCart()
   const [step, setStep] = useState<'phone' | 'otp'>('phone')
   const [phone, setPhone] = useState('')
   const [otp, setOtp] = useState('')
+  const [name, setName] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const [info, setInfo] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [orders, setOrders] = useState<
+    Array<{ id: string; reference: string; total: number; status: string; placedAt: string }>
+  >([])
   const otpRef = useRef<HTMLInputElement>(null)
-
-  useEffect(() => {
-    setSession(loadSession())
-    setReady(true)
-  }, [])
 
   useEffect(() => {
     if (step === 'otp') otpRef.current?.focus()
   }, [step])
 
-  if (ready && session) {
+  useEffect(() => {
+    cartStore.setAuthed(Boolean(customer))
+    if (!customer) return
+    void (async () => {
+      const [cartRes, ordersRes] = await Promise.all([
+        apiFetch('/api/account/cart'),
+        apiFetch('/api/account/orders'),
+      ])
+      if (cartRes.ok) {
+        const data = (await cartRes.json()) as { items: Parameters<typeof replace>[0] }
+        replace(data.items ?? [])
+      }
+      if (ordersRes.ok) {
+        const data = (await ordersRes.json()) as {
+          orders: Array<{
+            id: string
+            reference: string
+            total: number
+            status: string
+            placedAt: string | Date
+          }>
+        }
+        setOrders(
+          (data.orders ?? []).map((o) => ({
+            ...o,
+            placedAt: typeof o.placedAt === 'string' ? o.placedAt : new Date(o.placedAt).toISOString(),
+          })),
+        )
+      }
+    })()
+  }, [customer, replace])
+
+  if (!hydrated) {
+    return <div className="mt-6 h-24 animate-pulse rounded-lg bg-paper-100" />
+  }
+
+  if (customer) {
     return (
-      <div className="mt-6 rounded-xl border border-paper-200 bg-paper-50/60 p-5 sm:p-6">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-400">
-          Signed in
-        </p>
-        <p className="mt-2 text-lg font-semibold tracking-tight text-ink-900">
-          +91 {session.phone}
-        </p>
-        <p className="mt-1 text-[13px] leading-relaxed text-ink-400">
-          Demo session — orders and profile sync will land here once the backend is live.
-        </p>
-        <button
-          type="button"
-          className="btn-outline mt-5 w-full sm:w-auto"
-          onClick={() => {
-            saveSession(null)
-            setSession(null)
-            setStep('phone')
-            setPhone('')
-            setOtp('')
-            setError(null)
-            setInfo(null)
-          }}
-        >
-          Sign out
-        </button>
+      <div className="mt-6 space-y-6">
+        <div className="rounded-xl border border-paper-200 bg-paper-50/60 p-5 sm:p-6">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-400">
+            Signed in
+          </p>
+          <p className="mt-2 text-lg font-semibold tracking-tight text-ink-900">{customer.name}</p>
+          <p className="mt-0.5 text-[13px] text-ink-500">+91 {customer.phone}</p>
+          <div className="mt-5 flex flex-wrap gap-2">
+            <Link href="/cart" className="btn-primary">
+              View cart
+            </Link>
+            <Link href="/account?tab=wishlist" className="btn-outline">
+              Wishlist
+            </Link>
+            <button
+              type="button"
+              className="btn-quiet"
+              onClick={async () => {
+                await logout()
+                cartStore.setAuthed(false)
+                setOrders([])
+                setStep('phone')
+                setPhone('')
+                setOtp('')
+              }}
+            >
+              Sign out
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <h3 className="text-sm font-semibold text-ink-900">Recent orders</h3>
+          {orders.length === 0 ? (
+            <p className="mt-2 text-[13px] text-ink-400">No orders yet.</p>
+          ) : (
+            <ul className="mt-3 divide-y divide-paper-200 rounded-xl border border-paper-200">
+              {orders.slice(0, 8).map((order) => (
+                <li key={order.id} className="flex items-center justify-between gap-3 px-4 py-3 text-[13px]">
+                  <div>
+                    <p className="font-medium text-ink">{order.reference}</p>
+                    <p className="text-ink-400">
+                      {new Date(order.placedAt).toLocaleDateString('en-IN')} · {order.status}
+                    </p>
+                  </div>
+                  <p className="font-semibold text-ink">{formatINR(order.total)}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
     )
   }
 
-  const sendOtp = (e: React.FormEvent) => {
+  const sendOtp = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-    setInfo(null)
     const normalised = normalizePhone(phone)
-    if (!isValidPhone(normalised)) {
+    if (!/^\d{10}$/.test(normalised)) {
       setError('Enter a valid 10-digit mobile number.')
       return
     }
     setBusy(true)
-    // Tiny delay so the click feels intentional; still fully client-side.
-    window.setTimeout(() => {
+    try {
+      const res = await apiFetch('/api/account/otp/send', {
+        method: 'POST',
+        body: JSON.stringify({ phone: normalised }),
+      })
+      const data = (await res.json()) as { error?: string; otp?: string }
+      if (!res.ok) {
+        setError(data.error || 'Could not send OTP.')
+        return
+      }
       setPhone(normalised)
       setStep('otp')
-      setOtp('')
-      setInfo(`Demo OTP for +91 ${normalised}: ${MOCK_OTP}`)
+      if (data.otp) setOtp(data.otp)
+    } catch {
+      setError('Network error — try again.')
+    } finally {
       setBusy(false)
-    }, 250)
+    }
   }
 
-  const verifyOtp = (e: React.FormEvent) => {
+  const verifyOtp = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     const code = otp.replace(/\D/g, '')
@@ -115,20 +161,42 @@ export function AccountSignIn() {
       setError('Enter the 6-digit OTP.')
       return
     }
-    if (code !== MOCK_OTP) {
-      setError(`Incorrect OTP. Use ${MOCK_OTP} for this demo.`)
-      return
+    setBusy(true)
+    try {
+      const res = await apiFetch('/api/account/otp/verify', {
+        method: 'POST',
+        body: JSON.stringify({
+          phone,
+          otp: code,
+          name: name.trim() || undefined,
+          cart: cartStore.getLines(),
+        }),
+      })
+      const data = (await res.json()) as {
+        error?: string
+        customer?: { id: string; name: string; phone: string; email: string | null }
+        cart?: Parameters<typeof replace>[0]
+      }
+      if (!res.ok || !data.customer) {
+        setError(data.error || 'Could not verify OTP.')
+        return
+      }
+      setCustomer(data.customer)
+      cartStore.setAuthed(true)
+      if (data.cart) replace(data.cart)
+      await refresh()
+    } catch {
+      setError('Network error — try again.')
+    } finally {
+      setBusy(false)
     }
-    const next: Session = { phone, signedInAt: new Date().toISOString() }
-    saveSession(next)
-    setSession(next)
   }
 
   if (step === 'otp') {
     return (
       <form className="mt-6 space-y-4" onSubmit={verifyOtp} noValidate>
         <p className="text-[13px] leading-relaxed text-ink-500">
-          Code sent to <span className="font-semibold text-ink-800">+91 {phone}</span>.{' '}
+          Enter the code sent to <span className="font-semibold text-ink-800">+91 {phone}</span>.{' '}
           <button
             type="button"
             className="font-medium text-brand-600 underline-offset-2 hover:underline"
@@ -136,48 +204,42 @@ export function AccountSignIn() {
               setStep('phone')
               setOtp('')
               setError(null)
-              setInfo(null)
             }}
           >
             Change number
           </button>
         </p>
         <label className="block">
-          <span className="mb-1.5 block text-[12px] font-medium text-ink-600">
-            One-time password
-          </span>
+          <span className="mb-1.5 block text-[12px] font-medium text-ink-600">Your name</span>
+          <input
+            className="field"
+            placeholder="Optional — used on invoices"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            autoComplete="name"
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1.5 block text-[12px] font-medium text-ink-600">One-time password</span>
           <input
             ref={otpRef}
             type="text"
             inputMode="numeric"
             autoComplete="one-time-code"
-            pattern="[0-9]*"
             maxLength={6}
-            placeholder="123456"
+            placeholder="6-digit code"
             className="field tracking-[0.35em]"
             value={otp}
             onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-            aria-invalid={Boolean(error)}
           />
         </label>
-        {info ? <p className="text-[12px] font-medium text-brand-700">{info}</p> : null}
         {error ? (
           <p role="alert" className="text-[12px] text-danger-600">
             {error}
           </p>
         ) : null}
-        <button type="submit" className="btn-primary w-full">
-          Verify &amp; sign in
-        </button>
-        <button
-          type="button"
-          className="btn-quiet w-full text-[12px] text-ink-400"
-          onClick={() => {
-            setInfo(`Demo OTP resent: ${MOCK_OTP}`)
-            setError(null)
-          }}
-        >
-          Resend OTP
+        <button type="submit" className="btn-primary w-full" disabled={busy}>
+          {busy ? 'Verifying…' : 'Verify & continue'}
         </button>
       </form>
     )
@@ -195,13 +257,11 @@ export function AccountSignIn() {
             type="tel"
             inputMode="numeric"
             autoComplete="tel-national"
-            pattern="[0-9]*"
             maxLength={10}
             placeholder="9876543210"
             className="field pl-12"
             value={phone}
             onChange={(e) => setPhone(normalizePhone(e.target.value).slice(0, 10))}
-            aria-invalid={Boolean(error)}
           />
         </div>
       </label>
@@ -213,9 +273,6 @@ export function AccountSignIn() {
       <button type="submit" className="btn-primary w-full" disabled={busy}>
         {busy ? 'Sending…' : 'Send OTP'}
       </button>
-      <p className="text-[12px] leading-relaxed text-ink-400">
-        Demo sign-in — enter any 10-digit number, then OTP <strong className="text-ink-700">{MOCK_OTP}</strong>.
-      </p>
     </form>
   )
 }
@@ -237,17 +294,6 @@ export function BulkQuoteForm() {
         </p>
         <p className="mt-2 text-[15px] font-semibold tracking-tight text-ink-900">
           We&apos;ll reply within one working day.
-        </p>
-        <p className="mt-1 text-[13px] leading-relaxed text-ink-400">
-          Your quote request is with our team. Need it faster? Call{' '}
-          <a href="tel:+917822058149" className="font-medium text-brand-600">
-            7822058149
-          </a>{' '}
-          or write to{' '}
-          <a href="mailto:support@steryle.in" className="font-medium text-brand-600">
-            support@steryle.in
-          </a>
-          .
         </p>
         <button
           type="button"
@@ -279,9 +325,8 @@ export function BulkQuoteForm() {
         }
         setBusy(true)
         try {
-          const res = await fetch('/api/quotes', {
+          const res = await apiFetch('/api/quotes', {
             method: 'POST',
-            headers: { 'content-type': 'application/json' },
             body: JSON.stringify({
               organisation: org.trim(),
               requirement: requirement.trim(),
@@ -291,12 +336,12 @@ export function BulkQuoteForm() {
           })
           const data = (await res.json().catch(() => ({}))) as { error?: string }
           if (!res.ok) {
-            setError(data.error || 'Could not submit — try again in a moment.')
+            setError(data.error || 'Could not submit — try again.')
             return
           }
           setSent(true)
         } catch {
-          setError('Network error — check your connection and try again.')
+          setError('Network error — try again.')
         } finally {
           setBusy(false)
         }
@@ -309,7 +354,6 @@ export function BulkQuoteForm() {
           placeholder="Clinic or hospital name"
           value={org}
           onChange={(e) => setOrg(e.target.value)}
-          autoComplete="organization"
         />
       </label>
       <label className="block">
@@ -324,29 +368,23 @@ export function BulkQuoteForm() {
       </label>
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block">
-          <span className="mb-1.5 block text-[12px] font-medium text-ink-600">
-            Contact name <span className="font-normal text-ink-400">(optional)</span>
-          </span>
+          <span className="mb-1.5 block text-[12px] font-medium text-ink-600">Contact name</span>
           <input
             className="field"
-            placeholder="Your name"
+            placeholder="Optional"
             value={contactName}
             onChange={(e) => setContactName(e.target.value)}
-            autoComplete="name"
           />
         </label>
         <label className="block">
-          <span className="mb-1.5 block text-[12px] font-medium text-ink-600">
-            Phone <span className="font-normal text-ink-400">(optional)</span>
-          </span>
+          <span className="mb-1.5 block text-[12px] font-medium text-ink-600">Phone</span>
           <input
             className="field"
             type="tel"
             inputMode="numeric"
-            placeholder="10-digit number"
+            placeholder="Optional"
             value={contactPhone}
             onChange={(e) => setContactPhone(normalizePhone(e.target.value).slice(0, 10))}
-            autoComplete="tel-national"
           />
         </label>
       </div>

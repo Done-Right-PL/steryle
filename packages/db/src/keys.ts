@@ -89,6 +89,20 @@ export const keys = {
     gsi1pk: 'QUOTES',
     gsi1sk: `CREATED#${createdAt}#${id}`,
   }),
+  otp: (phone: string) => ({ pk: `OTP#CUSTOMER#${phone}`, sk: 'PENDING' }),
+  customerSession: (tokenHash: string) => ({ pk: `CSESSION#${tokenHash}`, sk: 'SESSION' }),
+  cartLine: (customerId: string, sku: string) => ({
+    pk: `CUSTOMER#${customerId}`,
+    sk: `CART#${sku}`,
+  }),
+  wishlistItem: (customerId: string, sku: string) => ({
+    pk: `CUSTOMER#${customerId}`,
+    sk: `WISH#${sku}`,
+  }),
+  wishlistIndex: (addedAt: string, customerId: string, sku: string) => ({
+    gsi1pk: `WISH#${customerId}`,
+    gsi1sk: `ADDED#${addedAt}#${sku}`,
+  }),
 }
 
 export function adminFromItem(item: DynItem): AdminUser {
@@ -196,6 +210,16 @@ export function orderFromItem(item: DynItem): OrderRow {
     shipping: Number(item.shipping ?? 0),
     tax: Number(item.tax ?? 0),
     total: Number(item.total),
+    paymentMethod: item.paymentMethod == null ? null : String(item.paymentMethod),
+    razorpayOrderId: item.razorpayOrderId == null ? null : String(item.razorpayOrderId),
+    razorpayPaymentId: item.razorpayPaymentId == null ? null : String(item.razorpayPaymentId),
+    shippingName: item.shippingName == null ? null : String(item.shippingName),
+    shippingPhone: item.shippingPhone == null ? null : String(item.shippingPhone),
+    shippingEmail: item.shippingEmail == null ? null : String(item.shippingEmail),
+    shippingAddress: item.shippingAddress == null ? null : String(item.shippingAddress),
+    shippingCity: item.shippingCity == null ? null : String(item.shippingCity),
+    shippingPin: item.shippingPin == null ? null : String(item.shippingPin),
+    gstin: item.gstin == null ? null : String(item.gstin),
     placedAt: toDate(item.placedAt),
     createdAt: toDate(item.createdAt),
     updatedAt: toDate(item.updatedAt),

@@ -6,6 +6,7 @@ import type { Product } from '@steryle/core'
 import { AddToCartButton } from './AddToCartButton'
 import { useCart } from '@/lib/cart-store'
 import { QtyStepper } from './QtyStepper'
+import { WishlistButton } from './WishlistButton'
 
 export function BuyPanel({ product }: { product: Product }) {
   const [qty, setQty] = useState(1)
@@ -30,6 +31,7 @@ export function BuyPanel({ product }: { product: Product }) {
         >
           Buy now
         </button>
+        <WishlistButton product={product} />
       </div>
     </div>
   )

@@ -12,6 +12,7 @@ import {
   type CartTotals,
   type Product,
 } from '@steryle/core'
+import { apiFetch } from './auth-store'
 
 const STORAGE_KEY = 'steryle.cart.v2'
 
@@ -20,15 +21,11 @@ interface Snapshot {
   hydrated: boolean
 }
 
-/**
- * The server (and the first client render) must agree on an empty cart, so the
- * real contents are read from localStorage only once a subscriber mounts. This
- * keeps hydration stable without reading storage during render.
- */
 const SERVER_SNAPSHOT: Snapshot = { items: {}, hydrated: false }
 
 let snapshot: Snapshot = SERVER_SNAPSHOT
 const listeners = new Set<() => void>()
+let authed = false
 
 const emit = () => {
   for (const listener of listeners) listener()
@@ -38,13 +35,23 @@ const persist = (items: CartState) => {
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
   } catch {
-    // Storage full or blocked; the in-memory cart still works.
+    // ignore
   }
+}
+
+const syncRemote = (items: CartState) => {
+  if (!authed) return
+  const lines = cartLines(items)
+  void apiFetch('/api/account/cart', {
+    method: 'PUT',
+    body: JSON.stringify({ items: lines }),
+  }).catch(() => null)
 }
 
 const commit = (items: CartState) => {
   snapshot = { items, hydrated: true }
   persist(items)
+  syncRemote(items)
   emit()
 }
 
@@ -55,7 +62,7 @@ function hydrateOnce() {
     const raw = window.localStorage.getItem(STORAGE_KEY)
     if (raw) items = JSON.parse(raw) as CartState
   } catch {
-    // Corrupt or unavailable storage: start from an empty cart.
+    // ignore
   }
   snapshot = { items, hydrated: true }
   emit()
@@ -69,21 +76,31 @@ const subscribe = (listener: () => void) => {
   }
 }
 
+function stateFromLines(lines: CartLine[]): CartState {
+  return Object.fromEntries(lines.map((l) => [l.sku, l]))
+}
+
 export const cartStore = {
   add: (product: Product, qty = 1) => commit(addToCart(snapshot.items, product, qty)),
   setQty: (sku: string, qty: number) => commit(setCartQty(snapshot.items, sku, qty)),
+  replace: (lines: CartLine[]) => commit(stateFromLines(lines)),
   remove: (sku: string) => commit(removeFromCart(snapshot.items, sku)),
   clear: () => commit({}),
+  /** Call after login/logout so cart syncs with the account. */
+  setAuthed: (value: boolean) => {
+    authed = value
+  },
+  getLines: () => cartLines(snapshot.items),
 }
 
 export interface CartApi extends CartTotals {
   items: CartLine[]
-  /** False until localStorage has been read, so SSR and first paint agree. */
   hydrated: boolean
   add: typeof cartStore.add
   setQty: typeof cartStore.setQty
   remove: typeof cartStore.remove
   clear: typeof cartStore.clear
+  replace: typeof cartStore.replace
 }
 
 export function useCart(): CartApi {

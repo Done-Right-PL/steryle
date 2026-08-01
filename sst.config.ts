@@ -67,6 +67,12 @@ export default $config({
       memory: "1024 MB",
       environment: {
         CORS_ORIGINS: corsOrigins.join(","),
+        // Echo OTP in API responses until SMS delivery is wired.
+        OTP_ECHO: "true",
+        // Mock Razorpay until live keys are set (RAZORPAY_MOCK=false + KEY_ID/SECRET).
+        RAZORPAY_MOCK: process.env.RAZORPAY_MOCK ?? "true",
+        RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID ?? "",
+        RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET ?? "",
       },
       nodejs: {
         esbuild: {

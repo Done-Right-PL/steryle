@@ -14,8 +14,8 @@ commodes and hospital linens. Both exclusions are enforced in
 `scripts/scrape-surginatal.mjs` and asserted by the `@steryle/core` test suite,
 so a re-scrape cannot reintroduce them.
 
-> Independent demo storefront for educational use. No payments are processed
-> and no orders ship.
+> Independent storefront. Checkout supports COD and Razorpay (mock by default
+> until `RAZORPAY_*` keys are set).
 
 ## Design language
 

@@ -37,6 +37,21 @@ export const Icon = {
   plus: (p: IconProps) => <Svg d="M12 5v14|M5 12h14" {...p} />,
   trash: (p: IconProps) => <Svg d="M4 7h16|M9 7V4h6v3|M6 7l1 13h10l1-13" {...p} />,
   check: (p: IconProps) => <Svg d="M5 13l4 4L19 7" {...p} />,
+  heart: ({ filled, ...p }: IconProps & { filled?: boolean }) =>
+    filled ? (
+      <svg
+        viewBox="0 0 24 24"
+        width={20}
+        height={20}
+        aria-hidden="true"
+        fill="currentColor"
+        {...p}
+      >
+        <path d="M12 21s-6.7-4.35-9.33-8.1C.8 10.1 1.5 6.5 4.4 5.1 6.5 4.1 8.9 4.7 10.5 6.5L12 8.2l1.5-1.7c1.6-1.8 4-2.4 6.1-1.4 2.9 1.4 3.6 5 1.73 7.8C18.7 16.65 12 21 12 21z" />
+      </svg>
+    ) : (
+      <Svg d="M12 21s-6.7-4.35-9.33-8.1C.8 10.1 1.5 6.5 4.4 5.1 6.5 4.1 8.9 4.7 10.5 6.5L12 8.2l1.5-1.7c1.6-1.8 4-2.4 6.1-1.4 2.9 1.4 3.6 5 1.73 7.8C18.7 16.65 12 21 12 21z" {...p} />
+    ),
   truck: (p: IconProps) => (
     <Svg d="M2 7h11v9H2zM13 11h4l3 3v2h-7z|M7 19a1.6 1.6 0 1 0 0-.1|M17 19a1.6 1.6 0 1 0 0-.1" {...p} />
   ),

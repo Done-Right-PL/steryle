@@ -3,51 +3,179 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { formatINR } from '@steryle/core'
+import { apiFetch, useCustomer } from '@/lib/auth-store'
 import { useCart } from '@/lib/cart-store'
+import { mockPaymentProof, openRazorpayCheckout } from '@/lib/razorpay'
 import { Icon } from './Icons'
 
 const PAYMENT_METHODS = ['UPI', 'Card', 'Net banking', 'Cash on delivery'] as const
 
+type PaymentIntent = {
+  mock: boolean
+  keyId: string
+  razorpayOrderId: string
+  amount: number
+  currency: string
+  name: string
+  description: string
+  prefill: { name: string; email?: string; contact: string }
+}
+
+type OrderPayload = {
+  id: string
+  reference: string
+}
+
 export function CheckoutForm() {
+  const { customer, hydrated: authHydrated } = useCustomer()
   const { items, hydrated, subtotal, shipping, tax, total, clear } = useCart()
   const [orderId, setOrderId] = useState<string | null>(null)
   const [method, setMethod] = useState<(typeof PAYMENT_METHODS)[number]>('UPI')
+  const [error, setError] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
 
-  const placeOrder = (e: React.FormEvent) => {
-    e.preventDefault()
-    setOrderId(`STR-${Date.now().toString(36).toUpperCase()}`)
+  const verifyAndFinish = async (order: OrderPayload, proof: {
+    razorpay_order_id: string
+    razorpay_payment_id: string
+    razorpay_signature: string
+  }) => {
+    const res = await apiFetch('/api/orders/verify', {
+      method: 'POST',
+      body: JSON.stringify({
+        orderId: order.id,
+        ...proof,
+      }),
+    })
+    const data = (await res.json()) as { error?: string; order?: OrderPayload }
+    if (!res.ok || !data.order) {
+      throw new Error(data.error || 'Payment verification failed.')
+    }
     clear()
+    setOrderId(data.order.reference)
+  }
+
+  const placeOrder = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setError(null)
+
+    if (!customer) {
+      setError('Please sign in before placing an order.')
+      return
+    }
+
+    const form = new FormData(e.currentTarget)
+    setBusy(true)
+    try {
+      const res = await apiFetch('/api/orders', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: String(form.get('name') || ''),
+          phone: String(form.get('phone') || ''),
+          email: String(form.get('email') || ''),
+          address: String(form.get('address') || ''),
+          city: String(form.get('city') || ''),
+          pin: String(form.get('pin') || ''),
+          gstin: String(form.get('gstin') || ''),
+          paymentMethod: method,
+        }),
+      })
+      const data = (await res.json()) as {
+        error?: string
+        order?: OrderPayload
+        payment?: PaymentIntent | null
+      }
+      if (!res.ok || !data.order) {
+        setError(data.error || 'Could not place order.')
+        return
+      }
+
+      // COD — already confirmed server-side.
+      if (!data.payment) {
+        clear()
+        setOrderId(data.order.reference)
+        return
+      }
+
+      if (data.payment.mock) {
+        await verifyAndFinish(data.order, mockPaymentProof(data.payment.razorpayOrderId))
+        return
+      }
+
+      await new Promise<void>((resolve, reject) => {
+        openRazorpayCheckout({
+          key: data.payment!.keyId,
+          amount: data.payment!.amount,
+          currency: data.payment!.currency,
+          name: data.payment!.name,
+          description: data.payment!.description,
+          order_id: data.payment!.razorpayOrderId,
+          prefill: data.payment!.prefill,
+          onSuccess: (proof) => {
+            verifyAndFinish(data.order!, proof)
+              .then(() => resolve())
+              .catch((err: unknown) =>
+                reject(err instanceof Error ? err : new Error('Payment verification failed.')),
+              )
+          },
+          onDismiss: () => reject(new Error('Payment cancelled.')),
+        }).catch(reject)
+      })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Network error — try again.')
+    } finally {
+      setBusy(false)
+    }
   }
 
   if (orderId) {
     return (
-      <div className="container-x py-28 text-center">
-        <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-success-50 text-success-600"><Icon.check width={28} height={28} /></span>
-        <h1 className="mt-6 text-3xl font-extrabold tracking-tight text-ink-900">
+      <div className="container-x py-16 text-center sm:py-28">
+        <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-success-50 text-success-600">
+          <Icon.check width={28} height={28} />
+        </span>
+        <h1 className="mt-6 text-2xl font-extrabold tracking-tight text-ink-900 sm:text-3xl">
           Order confirmed
         </h1>
         <p className="mt-4 text-[13px] text-ink-400">
-          Reference <span className="font-medium text-ink">{orderId}</span> — a GST invoice has been
-          emailed to you.
+          Reference <span className="font-medium text-ink">{orderId}</span> — we&apos;ll email
+          the GST invoice once payment clears.
         </p>
-        <p className="mt-2 text-[11px] text-ink-300">
-          This is a demo storefront, so no payment was taken and nothing will ship.
+        <div className="mt-9 flex flex-wrap justify-center gap-3">
+          <Link href="/account" className="btn-primary">
+            View account
+          </Link>
+          <Link href="/categories" className="btn-outline">
+            Continue shopping
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  if (!hydrated || !authHydrated) {
+    return <div className="container-x py-24 text-[13px] text-ink-300">Loading checkout…</div>
+  }
+
+  if (!customer) {
+    return (
+      <div className="container-x py-16 text-center sm:py-28">
+        <h1 className="text-2xl font-extrabold tracking-tight text-ink-900 sm:text-3xl">
+          Sign in to checkout
+        </h1>
+        <p className="mt-3 text-[13px] text-ink-400">
+          Your cart is saved — sign in with your mobile to place the order.
         </p>
-        <Link href="/categories" className="btn-primary mt-9">
-          Continue shopping
+        <Link href="/account" className="btn-primary mt-9">
+          Sign in
         </Link>
       </div>
     )
   }
 
-  if (!hydrated) {
-    return <div className="container-x py-24 text-[13px] text-ink-300">Loading checkout…</div>
-  }
-
   if (items.length === 0) {
     return (
-      <div className="container-x py-28 text-center">
-        <h1 className="text-3xl font-extrabold tracking-tight text-ink-900">
+      <div className="container-x py-16 text-center sm:py-28">
+        <h1 className="text-2xl font-extrabold tracking-tight text-ink-900 sm:text-3xl">
           Nothing to check out
         </h1>
         <Link href="/categories" className="btn-primary mt-9">
@@ -58,19 +186,30 @@ export function CheckoutForm() {
   }
 
   return (
-    <div className="container-x py-10">
-      <h1 className="text-3xl font-extrabold tracking-tight text-ink-900">
-        Checkout
-      </h1>
+    <div className="container-x py-6 sm:py-10">
+      <h1 className="text-2xl font-extrabold tracking-tight text-ink-900 sm:text-3xl">Checkout</h1>
 
-      <form onSubmit={placeOrder} className="mt-12 grid gap-14 lg:grid-cols-[1fr_360px]">
-        <div className="space-y-12">
+      <form onSubmit={placeOrder} className="mt-8 grid gap-10 sm:mt-12 lg:grid-cols-[1fr_360px] lg:gap-14">
+        <div className="min-w-0 space-y-10 sm:space-y-12">
           <fieldset>
             <legend className="label">Delivery address</legend>
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
-              <Field label="Full name" name="name" autoComplete="name" />
-              <Field label="Phone" name="phone" type="tel" autoComplete="tel" />
-              <Field label="Email" name="email" type="email" autoComplete="email" />
+              <Field label="Full name" name="name" autoComplete="name" defaultValue={customer.name} />
+              <Field
+                label="Phone"
+                name="phone"
+                type="tel"
+                autoComplete="tel"
+                defaultValue={customer.phone}
+              />
+              <Field
+                label="Email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                defaultValue={customer.email ?? ''}
+                required={false}
+              />
               <Field label="Clinic / hospital (optional)" name="org" required={false} />
               <Field label="Address" name="address" className="sm:col-span-2" />
               <Field label="City" name="city" autoComplete="address-level2" />
@@ -80,69 +219,74 @@ export function CheckoutForm() {
           </fieldset>
 
           <fieldset>
-            <legend className="label">Payment method</legend>
-            <div className="mt-5 divide-y divide-paper-200 border-y border-paper-200">
+            <legend className="label">Payment</legend>
+            <div className="mt-5 grid gap-2 sm:grid-cols-2">
               {PAYMENT_METHODS.map((m) => (
-                <label key={m} className="flex cursor-pointer items-center gap-3 py-3.5 text-[13px]">
+                <label
+                  key={m}
+                  className={`flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 text-sm ${
+                    method === m ? 'border-brand-500 bg-brand-50' : 'border-paper-200'
+                  }`}
+                >
                   <input
                     type="radio"
                     name="payment"
-                    value={m}
+                    className="accent-brand-600"
                     checked={method === m}
                     onChange={() => setMethod(m)}
-                    className="h-3.5 w-3.5 accent-brand-600"
                   />
-                  <span className="text-ink-700">{m}</span>
+                  {m}
                 </label>
               ))}
             </div>
           </fieldset>
+
+          {error ? (
+            <p role="alert" className="text-[13px] text-danger-600">
+              {error}
+            </p>
+          ) : null}
         </div>
 
-        <aside className="lg:sticky lg:top-40 lg:self-start">
-          <div className="card p-6">
-            <p className="text-sm font-bold text-ink-900">Order summary</p>
-
-            <ul className="mt-5 space-y-3 border-b border-paper-200 pb-5 text-[13px]">
-              {items.map((line) => (
-                <li key={line.sku} className="flex justify-between gap-4">
-                  <span className="min-w-0 flex-1 truncate text-ink-500">
-                    {line.qty} × {line.name}
-                  </span>
-                  <span className="font-medium text-ink-800">{formatINR(line.price * line.qty)}</span>
-                </li>
-              ))}
-            </ul>
-
-            <dl className="mt-5 space-y-3 text-[13px]">
-              <div className="flex justify-between">
-                <dt className="text-ink-400">Subtotal</dt>
-                <dd className="font-medium text-ink-800">{formatINR(subtotal)}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-ink-400">Shipping</dt>
-                <dd className="font-medium text-ink-800">{shipping === 0 ? 'Free' : formatINR(shipping)}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-ink-400">GST (12%)</dt>
-                <dd className="font-medium text-ink-800">{formatINR(tax)}</dd>
-              </div>
-            </dl>
-
-            <div className="mt-5 flex items-baseline justify-between border-t border-paper-200 pt-5">
-              <span className="text-[13px] text-ink-400">Total</span>
-              <span className="text-xl font-extrabold tracking-tight text-ink-900">
-                {formatINR(total)}
-              </span>
+        <aside className="h-fit rounded-xl border border-paper-200 p-5">
+          <h2 className="text-sm font-semibold text-ink-900">Order summary</h2>
+          <ul className="mt-4 space-y-3 text-[13px]">
+            {items.map((line) => (
+              <li key={line.sku} className="flex justify-between gap-3">
+                <span className="min-w-0 text-ink-600">
+                  {line.name} × {line.qty}
+                </span>
+                <span className="shrink-0 font-medium">{formatINR(line.price * line.qty)}</span>
+              </li>
+            ))}
+          </ul>
+          <dl className="mt-5 space-y-2 border-t border-paper-200 pt-4 text-[13px]">
+            <div className="flex justify-between">
+              <dt className="text-ink-400">Subtotal</dt>
+              <dd>{formatINR(subtotal)}</dd>
             </div>
-
-            <button type="submit" className="btn-primary mt-7 w-full">
-              Place order
-            </button>
-            <p className="mt-3 text-[11px] leading-relaxed text-ink-300">
-              Demo only — no payment is processed and no order is dispatched.
-            </p>
-          </div>
+            <div className="flex justify-between">
+              <dt className="text-ink-400">Shipping</dt>
+              <dd>{shipping === 0 ? 'Free' : formatINR(shipping)}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-ink-400">GST</dt>
+              <dd>{formatINR(tax)}</dd>
+            </div>
+            <div className="flex justify-between text-base font-semibold">
+              <dt>Total</dt>
+              <dd>{formatINR(total)}</dd>
+            </div>
+          </dl>
+          <button type="submit" className="btn-primary mt-6 w-full" disabled={busy}>
+            {busy
+              ? method === 'Cash on delivery'
+                ? 'Placing order…'
+                : 'Opening payment…'
+              : method === 'Cash on delivery'
+                ? 'Place order'
+                : 'Pay & place order'}
+          </button>
         </aside>
       </form>
     </div>
@@ -152,21 +296,27 @@ export function CheckoutForm() {
 function Field({
   label,
   name,
-  type = 'text',
+  className = '',
   required = true,
-  className,
+  defaultValue,
   ...rest
 }: {
   label: string
   name: string
-  type?: string
-  required?: boolean
   className?: string
+  required?: boolean
+  defaultValue?: string
 } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
-    <label className={`block ${className ?? ''}`}>
-      <span className="text-[11px] text-ink-400">{label}</span>
-      <input name={name} type={type} required={required} className="field mt-1.5" {...rest} />
+    <label className={`block ${className}`}>
+      <span className="mb-1.5 block text-[12px] font-medium text-ink-600">{label}</span>
+      <input
+        name={name}
+        required={required}
+        defaultValue={defaultValue}
+        className="field"
+        {...rest}
+      />
     </label>
   )
 }

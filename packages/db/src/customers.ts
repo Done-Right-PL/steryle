@@ -1,4 +1,4 @@
-import { GetCommand, PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb'
+import { GetCommand, PutCommand, QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb'
 import { createId, doc, nowIso, tableName } from './client'
 import {
   customerFromItem,
@@ -42,6 +42,18 @@ export async function getCustomerById(id: string): Promise<CustomerRow | null> {
     new GetCommand({ TableName: tableName(), Key: keys.customer(id) }),
   )
   return res.Item ? customerFromItem(res.Item as DynItem) : null
+}
+
+export async function getCustomerByPhone(phone: string): Promise<CustomerRow | null> {
+  const index = keys.customerPhone(phone)
+  const items = await queryAll({
+    TableName: tableName(),
+    IndexName: 'gsi2',
+    KeyConditionExpression: 'gsi2pk = :pk AND gsi2sk = :sk',
+    ExpressionAttributeValues: { ':pk': index.gsi2pk, ':sk': index.gsi2sk },
+    Limit: 1,
+  })
+  return items[0] ? customerFromItem(items[0]) : null
 }
 
 export async function putCustomer(
@@ -140,6 +152,16 @@ export async function putOrder(input: {
   tax: number
   total: number
   placedAt: Date
+  paymentMethod?: string | null
+  razorpayOrderId?: string | null
+  razorpayPaymentId?: string | null
+  shippingName?: string | null
+  shippingPhone?: string | null
+  shippingEmail?: string | null
+  shippingAddress?: string | null
+  shippingCity?: string | null
+  shippingPin?: string | null
+  gstin?: string | null
   items: Array<{ sku: string; name: string; unitPrice: number; qty: number }>
 }): Promise<OrderRow> {
   const id = input.id ?? createId()
@@ -158,6 +180,16 @@ export async function putOrder(input: {
     shipping: input.shipping,
     tax: input.tax,
     total: input.total,
+    paymentMethod: input.paymentMethod ?? null,
+    razorpayOrderId: input.razorpayOrderId ?? null,
+    razorpayPaymentId: input.razorpayPaymentId ?? null,
+    shippingName: input.shippingName ?? null,
+    shippingPhone: input.shippingPhone ?? null,
+    shippingEmail: input.shippingEmail ?? null,
+    shippingAddress: input.shippingAddress ?? null,
+    shippingCity: input.shippingCity ?? null,
+    shippingPin: input.shippingPin ?? null,
+    gstin: input.gstin ?? null,
     placedAt,
     createdAt,
     updatedAt: createdAt,
@@ -196,6 +228,58 @@ export async function putOrder(input: {
   }
 
   return orderFromItem(orderItem)
+}
+
+export async function getOrderById(orderId: string): Promise<OrderRow | null> {
+  const meta = await doc.send(
+    new GetCommand({ TableName: tableName(), Key: keys.orderMeta(orderId) }),
+  )
+  if (!meta.Item) return null
+  const customerId = String(meta.Item.customerId)
+  const placedAt = String(meta.Item.placedAt)
+  const res = await doc.send(
+    new GetCommand({
+      TableName: tableName(),
+      Key: keys.order(customerId, placedAt, orderId),
+    }),
+  )
+  if (!res.Item) return null
+  const order = orderFromItem(res.Item as DynItem)
+  order.items = await listOrderItems(orderId)
+  return order
+}
+
+export async function confirmOrderPayment(input: {
+  orderId: string
+  razorpayOrderId: string
+  razorpayPaymentId: string
+}): Promise<OrderRow | null> {
+  const order = await getOrderById(input.orderId)
+  if (!order) return null
+  const placedAt = order.placedAt.toISOString()
+  const updatedAt = nowIso()
+  await doc.send(
+    new UpdateCommand({
+      TableName: tableName(),
+      Key: keys.order(order.customerId, placedAt, order.id),
+      UpdateExpression:
+        'SET #status = :status, razorpayOrderId = :roid, razorpayPaymentId = :rpid, updatedAt = :u',
+      ExpressionAttributeNames: { '#status': 'status' },
+      ExpressionAttributeValues: {
+        ':status': 'confirmed',
+        ':roid': input.razorpayOrderId,
+        ':rpid': input.razorpayPaymentId,
+        ':u': updatedAt,
+      },
+    }),
+  )
+  return {
+    ...order,
+    status: 'confirmed',
+    razorpayOrderId: input.razorpayOrderId,
+    razorpayPaymentId: input.razorpayPaymentId,
+    updatedAt: new Date(updatedAt),
+  }
 }
 
 export type { CustomerStatus }

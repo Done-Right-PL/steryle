@@ -112,6 +112,16 @@ export type OrderRow = {
   shipping: number
   tax: number
   total: number
+  paymentMethod?: string | null
+  razorpayOrderId?: string | null
+  razorpayPaymentId?: string | null
+  shippingName?: string | null
+  shippingPhone?: string | null
+  shippingEmail?: string | null
+  shippingAddress?: string | null
+  shippingCity?: string | null
+  shippingPin?: string | null
+  gstin?: string | null
   placedAt: Date
   createdAt: Date
   updatedAt: Date
