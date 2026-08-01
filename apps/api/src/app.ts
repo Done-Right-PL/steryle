@@ -201,7 +201,6 @@ export function createApp() {
     const registrationToken =
       typeof body?.registrationToken === 'string' ? body.registrationToken : ''
     const name = typeof body?.name === 'string' ? body.name.trim() : ''
-    const email = typeof body?.email === 'string' ? body.email.trim() : ''
     const gstinRaw = typeof body?.gstin === 'string' ? body.gstin.trim() : ''
     const gstCompanyName =
       typeof body?.gstCompanyName === 'string' ? body.gstCompanyName.trim() : ''
@@ -211,9 +210,6 @@ export function createApp() {
     }
     if (name.length < 2 || name.length > 120) {
       return c.json({ error: 'Enter your full name.' }, 400)
-    }
-    if (!isValidEmail(email)) {
-      return c.json({ error: 'Enter a valid email address.' }, 400)
     }
     if (gstinRaw && !isValidGstin(gstinRaw)) {
       return c.json({ error: 'Enter a valid 15-character GSTIN.' }, 400)
@@ -235,7 +231,6 @@ export function createApp() {
       (await registerCustomer({
         phone,
         name,
-        email,
         gstin: gstinRaw || null,
         gstCompanyName: gstCompanyName || null,
       }))

@@ -28,6 +28,10 @@ export const Icon = {
     <Svg d="M3 4h2.2l2.2 11.2A2 2 0 0 0 9.6 17H18a2 2 0 0 0 2-1.6L21 8H6|M9.5 21a1 1 0 1 0 0-.1|M17.5 21a1 1 0 1 0 0-.1" {...p} />
   ),
   user: (p: IconProps) => <Svg d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z|M4 21a8 8 0 0 1 16 0" {...p} />,
+  /** Door with arrow out — sign out / exit. */
+  logout: (p: IconProps) => (
+    <Svg d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4|M16 17l5-5-5-5|M21 12H9" {...p} />
+  ),
   menu: (p: IconProps) => <Svg d="M3 6h18|M3 12h18|M3 18h18" {...p} />,
   close: (p: IconProps) => <Svg d="M6 6l12 12|M18 6L6 18" {...p} />,
   star: (p: IconProps) => <Svg d="M12 4l2.3 4.9 5.2.7-3.8 3.7 1 5.3L12 16l-4.7 2.6 1-5.3L4.5 9.6l5.2-.7L12 4Z" {...p} />,

@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import type { Product } from '@steryle/core'
 import { useCart } from '@/lib/cart-store'
 import { Icon } from './Icons'
@@ -20,14 +19,8 @@ export function AddToCartButton({
   label,
   className,
 }: Props) {
-  const { add } = useCart()
-  const [added, setAdded] = useState(false)
-
-  useEffect(() => {
-    if (!added) return
-    const timer = setTimeout(() => setAdded(false), 1600)
-    return () => clearTimeout(timer)
-  }, [added])
+  const { add, setQty, items } = useCart()
+  const count = items.find((line) => line.sku === product.sku)?.qty ?? 0
 
   if (!product.inStock) {
     return (
@@ -37,29 +30,48 @@ export function AddToCartButton({
     )
   }
 
+  if (count > 0) {
+    return (
+      <div
+        className={`flex h-10 w-full items-stretch overflow-hidden rounded-lg border border-brand-500 bg-brand-50 ${className ?? ''}`}
+        role="group"
+        aria-label={`Quantity of ${product.name} in cart`}
+      >
+        <button
+          type="button"
+          className="grid w-10 shrink-0 place-items-center text-brand-700 transition hover:bg-brand-100"
+          aria-label={`Decrease quantity of ${product.name}`}
+          onClick={() => setQty(product.sku, count - 1)}
+        >
+          <Icon.minus width={16} height={16} />
+        </button>
+        <span className="grid flex-1 place-items-center text-sm font-semibold tabular-nums text-ink-900">
+          {count}
+        </span>
+        <button
+          type="button"
+          className="grid w-10 shrink-0 place-items-center text-brand-700 transition hover:bg-brand-100"
+          aria-label={`Increase quantity of ${product.name}`}
+          onClick={() => setQty(product.sku, count + 1)}
+        >
+          <Icon.plus width={16} height={16} />
+        </button>
+      </div>
+    )
+  }
+
   const cls =
     variant === 'primary' ? 'btn-primary' : variant === 'quiet' ? 'btn-quiet' : 'btn-outline'
 
   return (
     <button
       type="button"
-      onClick={() => {
-        add(product, qty)
-        setAdded(true)
-      }}
+      onClick={() => add(product, qty)}
       className={`${cls} w-full ${className ?? ''}`}
       aria-label={`Add ${product.name} to cart`}
     >
-      {added ? (
-        <>
-          <Icon.check width={16} height={16} /> Added
-        </>
-      ) : (
-        <>
-          <Icon.cart width={16} height={16} />
-          {label ?? 'Add to cart'}
-        </>
-      )}
+      <Icon.cart width={16} height={16} />
+      {label ?? 'Add to cart'}
     </button>
   )
 }

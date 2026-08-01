@@ -142,11 +142,11 @@ export async function touchCustomerByPhone(phone: string): Promise<CustomerRow |
   return (await getCustomerById(existing.id)) ?? existing
 }
 
-/** First-time registration after OTP — name, mobile, email; optional GST invoice fields. */
+/** First-time registration after OTP — name + mobile; optional GST invoice fields. */
 export async function registerCustomer(input: {
   phone: string
   name: string
-  email: string
+  email?: string | null
   gstin?: string | null
   gstCompanyName?: string | null
 }): Promise<CustomerRow> {
@@ -155,11 +155,12 @@ export async function registerCustomer(input: {
 
   const gstin = input.gstin?.trim().toUpperCase() || null
   const gstCompanyName = input.gstCompanyName?.trim() || null
+  const email = input.email?.trim().toLowerCase() || null
 
   return putCustomer({
     id: createId(),
     name: input.name.trim(),
-    email: input.email.trim().toLowerCase(),
+    email,
     phone: input.phone,
     city: null,
     state: null,

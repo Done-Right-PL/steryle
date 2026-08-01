@@ -88,16 +88,26 @@ export async function replaceCart(
   return getCart(customerId)
 }
 
-/** Merge guest lines into the account cart (qty adds when SKU overlaps). */
+/**
+ * Fold guest lines into the account cart.
+ * Overlapping SKUs take Math.max(qty) so a stale local copy of the account
+ * cart (common after session expiry) does not double quantities on login.
+ * New guest SKUs are added as-is.
+ */
 export async function mergeCart(
   customerId: string,
   guestLines: AccountCartLine[],
 ): Promise<AccountCartLine[]> {
+  if (guestLines.length === 0) return getCart(customerId)
   const existing = await getCart(customerId)
   const bySku = new Map(existing.map((l) => [l.sku, l]))
   for (const line of guestLines) {
+    if (!line?.sku || !(line.qty > 0)) continue
     const prev = bySku.get(line.sku)
-    bySku.set(line.sku, prev ? { ...line, qty: prev.qty + line.qty } : line)
+    bySku.set(
+      line.sku,
+      prev ? { ...prev, ...line, qty: Math.max(prev.qty, line.qty) } : line,
+    )
   }
   return replaceCart(customerId, [...bySku.values()])
 }

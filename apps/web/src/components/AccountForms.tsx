@@ -21,7 +21,6 @@ export function AccountSignIn() {
   const [otp, setOtp] = useState('')
   const [registrationToken, setRegistrationToken] = useState('')
   const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
   const [gstin, setGstin] = useState('')
   const [gstCompanyName, setGstCompanyName] = useState('')
   const [wantGstInvoice, setWantGstInvoice] = useState(false)
@@ -83,9 +82,6 @@ export function AccountSignIn() {
           </p>
           <p className="mt-2 text-lg font-semibold tracking-tight text-ink-900">{customer.name}</p>
           <p className="mt-0.5 text-[13px] text-ink-500">+91 {customer.phone}</p>
-          {customer.email ? (
-            <p className="mt-0.5 text-[13px] text-ink-500">{customer.email}</p>
-          ) : null}
           {customer.gstin ? (
             <p className="mt-2 text-[12px] text-ink-400">
               GST {customer.gstin}
@@ -104,14 +100,12 @@ export function AccountSignIn() {
               className="btn-quiet"
               onClick={async () => {
                 await logout()
-                cartStore.setAuthed(false)
                 setOrders([])
                 setStep('phone')
                 setPhone('')
                 setOtp('')
                 setRegistrationToken('')
                 setName('')
-                setEmail('')
                 setGstin('')
                 setGstCompanyName('')
                 setWantGstInvoice(false)
@@ -180,9 +174,13 @@ export function AccountSignIn() {
     cart?: Parameters<typeof replace>[0]
   }) => {
     if (!data.customer) return
-    setCustomer(data.customer)
-    cartStore.setAuthed(true)
+    // Apply server cart before marking authed / publishing customer, so we
+    // never PUT a stale guest copy back to the account cart.
+    cartStore.setAuthed(false)
     if (data.cart) replace(data.cart)
+    else cartStore.clear()
+    cartStore.setAuthed(true)
+    setCustomer(data.customer)
     await refresh()
   }
 
@@ -239,10 +237,6 @@ export function AccountSignIn() {
       setError('Enter your full name.')
       return
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      setError('Enter a valid email address.')
-      return
-    }
     const gst = gstin.replace(/\s/g, '').toUpperCase()
     if (wantGstInvoice) {
       if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/i.test(gst)) {
@@ -262,7 +256,6 @@ export function AccountSignIn() {
           phone,
           registrationToken,
           name: name.trim(),
-          email: email.trim(),
           gstin: wantGstInvoice ? gst : undefined,
           gstCompanyName: wantGstInvoice ? gstCompanyName.trim() : undefined,
           cart: cartStore.getLines(),
@@ -307,18 +300,6 @@ export function AccountSignIn() {
         <label className="block">
           <span className="mb-1.5 block text-[12px] font-medium text-ink-600">Mobile</span>
           <input className="field" value={`+91 ${phone}`} readOnly disabled />
-        </label>
-        <label className="block">
-          <span className="mb-1.5 block text-[12px] font-medium text-ink-600">Email</span>
-          <input
-            type="email"
-            className="field"
-            placeholder="you@clinic.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            autoComplete="email"
-            required
-          />
         </label>
 
         <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-paper-200 px-4 py-3">

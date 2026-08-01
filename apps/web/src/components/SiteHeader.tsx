@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { categories } from '@steryle/core'
+import { useCustomer } from '@/lib/auth-store'
 import { useCart } from '@/lib/cart-store'
 import { Icon, CategoryIcon } from './Icons'
 
@@ -14,6 +15,7 @@ export function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [catOpen, setCatOpen] = useState(false)
   const { count, hydrated } = useCart()
+  const { customer, logout } = useCustomer()
   const router = useRouter()
 
   const submit = (e: React.FormEvent) => {
@@ -90,6 +92,21 @@ export function SiteHeader() {
               </span>
             )}
           </Link>
+          {customer ? (
+            <button
+              type="button"
+              className="btn-quiet"
+              aria-label="Log out"
+              title="Log out"
+              onClick={async () => {
+                await logout()
+                router.refresh()
+              }}
+            >
+              <Icon.logout width={20} height={20} />
+              <span className="hidden lg:inline">Log out</span>
+            </button>
+          ) : null}
         </nav>
       </div>
 

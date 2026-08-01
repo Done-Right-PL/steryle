@@ -41,17 +41,31 @@ export function setCustomer(customer: CustomerSession | null) {
   emit()
 }
 
+async function clearLocalCartAsGuest() {
+  // Dynamic import avoids a circular dep with cart-store (which uses apiFetch).
+  const { cartStore } = await import('./cart-store')
+  // Account cart stays on the server; guest session starts empty.
+  cartStore.setAuthed(false)
+  cartStore.clear()
+}
+
 export async function refreshCustomer(): Promise<CustomerSession | null> {
+  const hadCustomer = Boolean(snapshot.customer)
   try {
     const res = await apiFetch('/api/account/me')
     if (!res.ok) {
+      // Session expired while local still held the account cart — clear so
+      // the next login does not merge that copy back onto the server cart.
+      if (hadCustomer) await clearLocalCartAsGuest()
       setCustomer(null)
       return null
     }
     const data = (await res.json()) as { customer: CustomerSession | null }
+    if (!data.customer && hadCustomer) await clearLocalCartAsGuest()
     setCustomer(data.customer)
     return data.customer
   } catch {
+    if (hadCustomer) await clearLocalCartAsGuest()
     setCustomer(null)
     return null
   }
@@ -59,6 +73,7 @@ export async function refreshCustomer(): Promise<CustomerSession | null> {
 
 export async function logoutCustomer() {
   await apiFetch('/api/account/logout', { method: 'POST' }).catch(() => null)
+  await clearLocalCartAsGuest()
   setCustomer(null)
 }
 
